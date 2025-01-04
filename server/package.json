@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "node server.jsx"
+    "dev": "node server.js"
   },
   "keywords": [],
   "author": "",

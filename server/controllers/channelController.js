@@ -1,5 +1,5 @@
-const Channel = require('../models/Channel.jsx');
-const Message = require('../models/Message.jsx');
+const Channel = require('../models/Channel.js');
+const Message = require('../models/Message.js');
 
 // Fetch all channels
 exports.getAllChannels = async (req, res) => {

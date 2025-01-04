@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const channelController = require('../controllers/channelController.jsx');
+const channelController = require('../controllers/channelController.js');
 
 // Routes for channels
 router.get('/', channelController.getAllChannels); // Fetch all channels
