@@ -1,11 +1,11 @@
-import { Router } from "express";
-import { signup, login, getUserInfo } from "../controllers/AuthController.js";
-import { verifyToken } from "../middlewares/AuthMiddleware.js";
+const express = require('express');
+const authRoutes = express.Router();
+const { signup, login, getUserInfo } = require("../controllers/AuthController.js");
+const { verifyToken } = require("../middlewares/AuthMiddleware.js");
 
-const authRoutes = Router();
 
 authRoutes.post('/signup', signup);
 authRoutes.post('/login', login);
 authRoutes.get('/user-info',verifyToken,getUserInfo) 
 
-export default authRoutes;
+module.exports = authRoutes;

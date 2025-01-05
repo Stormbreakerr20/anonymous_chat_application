@@ -1,6 +1,5 @@
-import User from "../models/UserModel.js";
-import pkg from 'jsonwebtoken';
-const {sign} = pkg;
+const User = require('../models/UserModel.js');
+const {sign} = require('jsonwebtoken')
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (email, userId) => {
@@ -12,7 +11,7 @@ const createToken = (email, userId) => {
     }
 };
 
-export const signup = async (req, res, next) => {
+exports.signup = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
@@ -52,7 +51,7 @@ export const signup = async (req, res, next) => {
     }
 };
 
-export const login = async (req, res,next) => {
+exports.login = async (req, res,next) => {
     try {
         const { email, password,} = req.body;
         if(!email || !password) {
@@ -88,7 +87,7 @@ export const login = async (req, res,next) => {
 
 }
 
-export const getUserInfo = async (req, res,next) => {
+exports.getUserInfo = async (req, res,next) => {
     try {
 
         const userData = await User.findById(req.userId);
