@@ -36,31 +36,18 @@ app.use('/api/auth', authRoutes);
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
-    // Joining a specific channel
-    socket.on('joinChannel', (channelId) => {
-        socket.join(channelId);
-        console.log(`User joined channel: ${channelId}`);
+    // Real-time message broadcast
+    socket.on('newMessage', (message) => {
+        io.to(message.channelId).emit('receiveMessage', message);
     });
 
-    // Listening for new messages
-    socket.on('sendMessage', (data) => {
-        const { channelId, userId, content } = data;
-
-        // Save message to database
-        const Message = require('./models/Message');
-        Message.create({ channelId, userId, content })
-            .then((newMessage) => {
-                // Emit the message to everyone in the channel
-                io.to(channelId).emit('receiveMessage', newMessage);
-            })
-            .catch((err) => {
-                console.error('Error saving message:', err);
-            });
+    // Real-time channel updates
+    socket.on('newChannel', (channel) => {
+        io.emit('channelCreated', channel);
     });
 
-    // Disconnect event
     socket.on('disconnect', () => {
-        console.log('A user disconnected:', socket.id);
+        console.log('User disconnected:', socket.id);
     });
 });
 
