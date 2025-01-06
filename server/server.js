@@ -23,8 +23,9 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: "http://localhost:5173",
-    credentials:true,
+    origin: 'http://localhost:5173', // Allow requests from the frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
+    credentials: true, // Allow credentials if needed
 }));
 
 // Database Connection
@@ -41,9 +42,13 @@ io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
     // Real-time message broadcast
+    // Socket.IO server-side code
     socket.on('newMessage', (message) => {
+        console.log('Broadcasting new message to channel:', message.channelId);
+        
         io.to(message.channelId).emit('receiveMessage', message);
-    });
+});
+
 
     // Real-time channel updates
     socket.on('newChannel', (channel) => {

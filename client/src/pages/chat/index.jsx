@@ -1,51 +1,41 @@
-import { useAppStore } from "@/store"
-import { useState,useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-// import { toast } from "sonner";
+import React, { useState, useEffect } from 'react';
 import socket from '../../socket';
 
 const Chat = () => {
-
-//   const {userInfo} = useAppStore();
-//   const navigate = useNavigate();
-//   useEffect(() => {
-//     if(!userInfo.profileSetup){
-
-//       toast("Please complete your profile setup");
-//       navigate('/profile');
-//     }
-//   },[userInfo,navigate]);
-
-  const [channels, setChannels] = useState([]);
+    const [channels, setChannels] = useState([]);
     const [newChannelName, setNewChannelName] = useState('');
     const [newChannelDescription, setNewChannelDescription] = useState('');
     const [selectedChannel, setSelectedChannel] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
+    const [loadingMessages, setLoadingMessages] = useState(false);
 
     // Fetch channels on load
     useEffect(() => {
         fetch('http://localhost:3000/api/channels/')
             .then((res) => res.json())
-            .then((data) => setChannels(data.channels))
+            .then((data) => setChannels(data.channels || []))
             .catch((err) => console.error('Error fetching channels:', err));
     }, []);
 
-    // Real-time updates
+    // Real-time updates with Socket.IO
     useEffect(() => {
-        socket.on('channelCreated', (channel) => {
+        const handleChannelCreated = (channel) => {
             setChannels((prev) => [...prev, channel]);
-        });
+        };
 
-        socket.on('receiveMessage', (message) => {
+        const handleReceiveMessage = (message) => {
             if (message.channelId === selectedChannel?._id) {
                 setMessages((prev) => [...prev, message]);
             }
-        });
+        };
+
+        socket.on('channelCreated', handleChannelCreated);
+        socket.on('receiveMessage', handleReceiveMessage);
 
         return () => {
-            socket.off('channelCreated');
-            socket.off('receiveMessage');
+            socket.off('channelCreated', handleChannelCreated);
+            socket.off('receiveMessage', handleReceiveMessage);
         };
     }, [selectedChannel]);
 
@@ -72,35 +62,50 @@ const Chat = () => {
 
     // Select a channel and fetch its messages
     const handleSelectChannel = (channel) => {
+        if (selectedChannel?._id === channel._id) return;
         setSelectedChannel(channel);
+        setLoadingMessages(true);
+
         fetch(`http://localhost:3000/api/channels/${channel._id}/messages`)
             .then((res) => res.json())
-            .then((data) => setMessages(data.messages))
-            .catch((err) => console.error('Error fetching messages:', err));
-            console.log("message sent succesfull");
+            .then((data) => {
+                setMessages(data.messages || []);
+                setLoadingMessages(false);
+            })
+            .catch((err) => {
+                console.error('Error fetching messages:', err);
+                setMessages([]);
+                setLoadingMessages(false);
+            });
     };
 
     // Send a new message
     const handleSendMessage = () => {
-        if (!newMessage) return;
-        console.log(newMessage);
+        if (!newMessage.trim()) return;
+
         fetch(`http://localhost:3000/api/channels/${selectedChannel._id}/messages`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: 'user123', content: newMessage }),
+            body: JSON.stringify({
+                userId: '677ae2c7f845ed72198c6898', // Replace with actual userId
+                content: newMessage,
+            }),
         })
             .then((res) => res.json())
             .then((data) => {
-                socket.emit('newMessage', data.message);
+                socket.emit('newMessage', data.message); // Emit message to other clients
+                setMessages((prev) => [...prev, data.message]); // Optimistically update UI
                 setNewMessage('');
             })
             .catch((err) => console.error('Error sending message:', err));
     };
 
+    
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-4">
                 <h1 className="text-2xl font-bold text-center mb-4">Chat Channels</h1>
+
                 {/* Create Channel Section */}
                 <div className="mb-6">
                     <h2 className="text-lg font-bold mb-2">Create a New Channel</h2>
@@ -145,33 +150,43 @@ const Chat = () => {
 
                 {/* Messages Section */}
                 {selectedChannel && (
-                    <div>
-                        <h2 className="text-lg font-bold mb-2">{selectedChannel.name}</h2>
-                        <div className="h-64 overflow-y-scroll border p-2 rounded mb-2">
-                            {messages.map((msg) => (
-                                <div key={msg._id} className="mb-2">
-                                    <div className="font-bold">User: {msg.userId}</div>
-                                    <div>{msg.content}</div>
-                                </div>
-                            ))}
+    <div>
+        <h2 className="text-lg font-bold mb-2">{selectedChannel.name}</h2>
+        {loadingMessages ? (
+            <div className="text-center p-4">Loading messages...</div>
+        ) : (
+            <div className="h-64 overflow-y-scroll border p-2 rounded mb-2">
+                {messages.length > 0 ? (
+                    messages.map((msg) => (
+                        <div key={msg._id} className="mb-2">
+                            <div className="font-bold">User: {msg.userId.name}</div> {/* Ensure userId is accessed properly */}
+                            <div>{msg.content}</div>
                         </div>
-                        <input
-                            className="w-full p-2 border rounded mb-2"
-                            placeholder="Type your message..."
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                        />
-                        <button
-                            className="w-full bg-green-500 text-white p-2 rounded"
-                            onClick={handleSendMessage}
-                        >
-                            Send Message
-                        </button>
-                    </div>
+                    ))
+                ) : (
+                    <div className="text-center text-gray-500">No messages yet</div>
                 )}
+            </div>
+        )}
+        <input
+            className="w-full p-2 border rounded mb-2"
+            placeholder="Type your message..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+        />
+        <button
+            className="w-full bg-green-500 text-white p-2 rounded"
+            onClick={handleSendMessage}
+        >
+            Send Message
+        </button>
+    </div>
+)}
+
+
             </div>
         </div>
     );
 };
 
-export default Chat
+export default Chat;
