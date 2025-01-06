@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import authRoutes from "./routes/AuthRoutes.js";
+import { existsSync, mkdirSync } from 'fs';
 
 dotenv.config();
 
@@ -17,6 +18,14 @@ app.use(cors({
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Ensure uploads directory exists
+if (!existsSync('uploads/profiles')) {
+    mkdirSync('uploads/profiles', { recursive: true });
+}
+
+// Serve static files from uploads directory
+app.use('/uploads/profiles', express.static('uploads/profiles'));
 
 app.use(cookieParser());
 app.use(express.json());

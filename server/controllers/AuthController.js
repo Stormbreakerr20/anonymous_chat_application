@@ -1,6 +1,7 @@
 import User from "../models/UserModel.js";
 import pkg from 'jsonwebtoken';
 const {sign} = pkg;
+import {renameSync , unlinkSync} from "fs";
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (email, userId) => {
@@ -145,3 +146,87 @@ export const updateProfile = async (req, res,next) => {
     }
 
 }
+
+export const addProfileImage = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "Profile image is required" });
+        }
+
+        // Log for debugging
+        console.log("Received file:", req.file);
+
+        // Use the file path as provided by multer
+        const filePath = req.file.path.replace(/\\/g, '/'); // Convert Windows path to URL format
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.userId,
+            { image: filePath },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            // Cleanup file if user update fails
+            try {
+                unlinkSync(req.file.path);
+            } catch (err) {
+                console.error('File cleanup error:', err);
+            }
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({
+            image: filePath
+        });
+    } catch (error) {
+        console.error('Profile image upload error:', error);
+        // Cleanup file on error
+        if (req.file?.path) {
+            try {
+                unlinkSync(req.file.path);
+            } catch (err) {
+                console.error('File cleanup error:', err);
+            }
+        }
+        return res.status(500).json({ message: "Failed to process image upload" });
+    }
+};
+
+export const removeProfileImage = async (req, res, next) => {
+    try {
+        const {userId} = req;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+
+        if (user.image) {
+            try {
+                unlinkSync(user.image);
+            } catch (err) {
+                console.log("Error deleting file:", err);
+            }
+        }
+
+        user.image = null;
+        await user.save();
+
+        return res.status(200).json({ message: "Profile image removed successfully" });
+    } catch (error) {
+        console.log({error});
+        return res.status(500).send("Internal server error");
+    }
+}
+
+export const logout = async (req, res, next) => {
+    try{
+        res.cookie('jwt', '', { maxAge: 1 ,secure: true, sameSite: 'None'});
+        res.status(200).send("Logged out successfully");
+    }catch(error){
+        console.log({error});
+        return res.status(500).send("Internal server error");
+    }
+}
+
