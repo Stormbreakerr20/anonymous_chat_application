@@ -1,4 +1,4 @@
-const { ConversationModel } = require("C:\Users\JOGESH SHARMA\Downloads\ShadowTalk-main\ShadowTalk-main\server\models\ConversationModel.js")
+const { ConversationModel } = require("../models/ConversationModel.js")
 
 const getConversation = async(currentUserId)=>{
     if(currentUserId){

@@ -1,4 +1,4 @@
-const UserModel = require("C:\Users\JOGESH SHARMA\Downloads\ShadowTalk-main\ShadowTalk-main\server\models\UserModel.js")
+const UserModel = require('../models/UserModel');
 const bcryptjs = require('bcryptjs')
 
 async function registerUser(request,response){
