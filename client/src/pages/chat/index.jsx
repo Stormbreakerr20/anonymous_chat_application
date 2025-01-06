@@ -1,20 +1,20 @@
 import { useAppStore } from "@/store"
-import { useEffect } from "react";
+import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import socket from '../../socket';
 
 const Chat = () => {
 
-  const {userInfo} = useAppStore();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if(!userInfo.profileSetup){
+//   const {userInfo} = useAppStore();
+//   const navigate = useNavigate();
+//   useEffect(() => {
+//     if(!userInfo.profileSetup){
 
-      toast("Please complete your profile setup");
-      navigate('/profile');
-    }
-  },[userInfo,navigate]);
+//       toast("Please complete your profile setup");
+//       navigate('/profile');
+//     }
+//   },[userInfo,navigate]);
 
   const [channels, setChannels] = useState([]);
     const [newChannelName, setNewChannelName] = useState('');
@@ -77,12 +77,13 @@ const Chat = () => {
             .then((res) => res.json())
             .then((data) => setMessages(data.messages))
             .catch((err) => console.error('Error fetching messages:', err));
+            console.log("message sent succesfull");
     };
 
     // Send a new message
     const handleSendMessage = () => {
         if (!newMessage) return;
-
+        console.log(newMessage);
         fetch(`http://localhost:3000/api/channels/${selectedChannel._id}/messages`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
