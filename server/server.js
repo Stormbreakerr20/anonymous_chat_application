@@ -46,7 +46,7 @@ io.on('connection', (socket) => {
     socket.on('newMessage', (message) => {
         console.log('Broadcasting new message to channel:', message.channelId);
         
-        io.to(message.channelId).emit('receiveMessage', message);
+        io.emit('receiveMessage', message);
 });
 
 

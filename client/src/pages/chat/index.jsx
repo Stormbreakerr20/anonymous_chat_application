@@ -32,7 +32,7 @@ const Chat = () => {
 
         socket.on('channelCreated', handleChannelCreated);
         socket.on('receiveMessage', handleReceiveMessage);
-
+        
         return () => {
             socket.off('channelCreated', handleChannelCreated);
             socket.off('receiveMessage', handleReceiveMessage);
@@ -94,7 +94,7 @@ const Chat = () => {
             .then((res) => res.json())
             .then((data) => {
                 socket.emit('newMessage', data.message); // Emit message to other clients
-                setMessages((prev) => [...prev, data.message]); // Optimistically update UI
+                // setMessages((prev) => [...prev, data.message]); // Optimistically update UI
                 setNewMessage('');
             })
             .catch((err) => console.error('Error sending message:', err));
