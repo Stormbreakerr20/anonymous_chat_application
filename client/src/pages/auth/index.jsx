@@ -21,10 +21,97 @@ const Auth = () => {
   const [googleEmail, setGoogleEmail] = useState(null);
   const [isVerified, setIsVerified] = useState(false);
   const [email, setEmail] = useState('');
+  const [googleLoginEmail, setGoogleLoginEmail] = useState(null);
 
+  const handleGoogleAuthLogin = useGoogleLogin({
+    onSuccess: async (response) => {
+      try {
+        const { access_token } = response;
+  
+        if (!access_token) {
+          toast.error('Failed to retrieve access token from Google');
+          return;
+        }
+  
+        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        });
+  
+        const userInfo = await userInfoResponse.json();
+        console.log(userInfo?.email)
+        if (userInfo?.email) {
+          setGoogleLoginEmail(userInfo.email); 
+          console.log(userInfo.email)
+
+          handleGoogleLogin(userInfo.email)
+          toast.success(`Google email verified: ${userInfo.email}`);
+        } else {
+          throw new Error('Failed to retrieve email from Google');
+        }
+      } catch (error) {
+        console.error('Error fetching Google user info:', error);
+        toast.error('Google Verification failed');
+  
+        setGoogleEmail(null);
+        setIsVerified(false);
+      }
+    },
+    onError: () => {
+      toast.error('Google Verification failed');
+      setGoogleEmail(null);
+      setIsVerified(false);
+    },
+  });
   
 
-  const handleGoogleSignup = useGoogleLogin({
+  const handleGoogleLogin = async (email) => {
+    try {
+      const response = await apiClient.post(
+        LOGIN_ROUTE,
+        { email ,password:"password" ,fromGoogle:true},
+        { withCredentials: true }
+      );
+  
+      if (response.data?.user?.id) {
+        setUserInfo(response.data.user);
+        if (response.data.user.profileSetup) {
+          navigate('/chat');
+        } else {
+          navigate('/profile');
+        }
+      }
+    } catch (error) {
+      console.error('Error validating Google login:', error);
+      toast.error(error.response?.data?.message || 'Google login failed');
+    }
+  };
+  
+  // const extractGoogleEmailAndLogin = async (accessToken) => {
+  //   try {
+  //     const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //       },
+  //     });
+  
+  //     const userInfo = await userInfoResponse.json();
+  
+  //     if (userInfo?.email) {
+  //       toast.success(`Google email verified: ${userInfo.email}`);
+  //       await handleGoogleLogin(userInfo.email); // Call handleGoogleLogin with the extracted email
+  //     } else {
+  //       throw new Error('Failed to retrieve email from Google');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error extracting Google email:', error);
+  //     toast.error('Failed to extract email from Google');
+  //   }
+  // };
+  
+
+  const handleGoogleAuth = useGoogleLogin({
     onSuccess: async (response) => {
       try {
         const { access_token } = response;
@@ -52,14 +139,13 @@ const Auth = () => {
       } catch (error) {
         console.error('Error fetching Google user info:', error);
         toast.error('Google Verification failed');
-       
+  
         setGoogleEmail(null);
         setIsVerified(false);
       }
     },
     onError: () => {
       toast.error('Google Verification failed');
-      
       setGoogleEmail(null);
       setIsVerified(false);
     },
@@ -78,23 +164,48 @@ const Auth = () => {
   }
 
   const handleLogin = async () => {
-    if(validateLogin()){
-        try {
-            const response = await apiClient.post(LOGIN_ROUTE, {email, password},{withCredentials:true});
-            if(response.data?.user?.id){
-                setUserInfo(response.data.user);
-                if(response.data.user.profileSetup){
-                    navigate('/chat');
-                } else {
-                    navigate('/profile');
-                }
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error(error.response?.data?.message || "Login failed");
+    // if (googleEmail) {
+      
+    //   try {
+    //     const response = await apiClient.post(
+    //       LOGIN_ROUTE,
+    //       { email: googleEmail },
+    //       { withCredentials: true }
+    //     );
+  
+    //     if (response.data.user.profileSetup) {
+    //         navigate('/chat');
+    //       } else {
+    //         navigate('/profile');
+    //       }
+    //   } catch (error) {
+    //     console.error(error);
+    //     toast.error(error.response?.data?.message || 'Google login failed');
+    //   }
+    // } else if (validateLogin()) {
+      
+      try {
+        const response = await apiClient.post(
+          LOGIN_ROUTE,
+          { email, password,fromGoogle:false },
+          { withCredentials: true }
+        );
+  
+        if (response.data?.user?.id) {
+          setUserInfo(response.data.user);
+          if (response.data.user.profileSetup) {
+            navigate('/chat');
+          } else {
+            navigate('/profile');
+          }
         }
-    }
-};
+      } catch (error) {
+        console.error(error);
+        toast.error(error.response?.data?.message || 'Login failed');
+      }
+    
+  };
+  
 
   const validateSignup = async  () => {
     if (!googleEmail) {
@@ -105,6 +216,8 @@ const Auth = () => {
       toast.error('Password is required');
       return false;
     }
+    console.log(password)
+    console.log(confirmpassword)
     if (password !== confirmpassword) {
       toast.error('Passwords do not match');
       return false;
@@ -114,7 +227,8 @@ const Auth = () => {
 
   
   const handleSignup = async () => {
-    if (validateSignup()) {
+    const isValid = await validateSignup();
+    if (isValid) {
       try {
         const response = await apiClient.post(
           SIGNUP_ROUTE,
@@ -131,7 +245,6 @@ const Auth = () => {
         const errorMessage = error.response?.data?.message || 'Signup failed';
         toast.error(errorMessage);
   
-        // Reset Google verification if the email already exists
         if (errorMessage === 'Email already exists') {
           setGoogleEmail(null);
           setIsVerified(false);
@@ -168,26 +281,50 @@ const Auth = () => {
                 </TabsTrigger>
               </TabsList>
               <TabsContent className="flex flex-col gap-5 mt-10" value="login">
-                <Input
-                  placeholder="Email"
-                  className="rounded-full p-6"
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <Input
-                  placeholder="Password"
-                  type="password"
-                  className="rounded-full p-6"
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <Button className="rounded-full p-6 bg-black text-white " onClick={handleLogin}>
-                  Login
-                </Button>
-              </TabsContent>
+  {!isVerified ? (
+    <Button
+      className="flex items-center justify-center rounded-full p-6 bg-blue-500 text-white"
+      onClick={() => handleGoogleAuthLogin()}
+    >
+      <FcGoogle className="mr-2" size={24} /> Login with Google
+    </Button>
+  ) : (
+    <div className="flex items-center justify-center">
+      <FaCheckCircle className="text-green-500" size={32} />
+      <span className="ml-2 text-green-500 font-medium">Email Verified</span>
+    </div>
+  )}
+
+  <div className="flex items-center justify-center gap-2 mt-5">
+    <hr className="w-full border-gray-300" />
+    <span className="text-gray-500 text-sm font-medium">OR</span>
+    <hr className="w-full border-gray-300" />
+  </div>
+
+  <div className={`transition-all duration-500 ${googleEmail ? 'hidden' : 'flex flex-col gap-5'}`}>
+    <Input
+      placeholder="Email"
+      className="rounded-full p-6"
+      onChange={(e) => setEmail(e.target.value)}
+    />
+    <Input
+      placeholder="Password"
+      type="password"
+      className="rounded-full p-6"
+      onChange={(e) => setPassword(e.target.value)}
+    />
+    <Button className="rounded-full p-6 bg-black text-white" onClick={handleLogin}>
+      Login
+    </Button>
+  </div>
+</TabsContent>
+
+
               <TabsContent className="flex flex-col gap-5 " value="signup">
                 {!isVerified ? (
                   <Button
                     className="flex items-center justify-center rounded-full p-6 bg-blue-500 text-white"
-                    onClick={() => handleGoogleSignup()}
+                    onClick={() => handleGoogleAuth()}
                   >
                     <FcGoogle className="mr-2" size={24} /> Verify Email with Google
                   </Button>
