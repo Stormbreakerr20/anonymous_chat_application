@@ -7,6 +7,8 @@ const channelRoutes = require('./routes/channelRoutes');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/AuthRoutes.js');
+const { existsSync, mkdirSync } =require('fs');
+const contactRoutes = require("./routes/ContactRoutes.js");
 
 const app = express();
 const server = http.createServer(app);
@@ -28,6 +30,10 @@ app.use(cors({
     credentials: true, // Allow credentials if needed
 }));
 
+if (!existsSync('uploads/profiles')) {
+    mkdirSync('uploads/profiles', { recursive: true });
+}
+app.use('/uploads/profiles', express.static('uploads/profiles'));
 // Database Connection
 mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('Database connected'))
@@ -36,6 +42,7 @@ mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTo
 // Routes
 app.use('/api/channels', channelRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/contacts', contactRoutes);
 
 // Socket.IO for Real-Time Updates
 io.on('connection', (socket) => {

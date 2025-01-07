@@ -1,5 +1,6 @@
-const User = require('../models/UserModel.js');
-const {sign} = require('jsonwebtoken')
+const User = require("../models/UserModel.js");
+const {sign} = require('jsonwebtoken');
+const {renameSync , unlinkSync} = require("fs");
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (email, userId) => {
@@ -51,41 +52,46 @@ exports.signup = async (req, res, next) => {
     }
 };
 
-exports.login = async (req, res,next) => {
+exports.login = async (req, res, next) => {
     try {
-        const { email, password,} = req.body;
+        const { email, password } = req.body;
         if(!email || !password) {
-            return res.status(400).send("email and password are required");
+            return res.status(400).json({ message: "Email and password are required" });
         }
         const user = await User.findOne({ email });
-        if(!user){
-            return res.status(404).send("User not found");
+        if(!user) {
+            return res.status(404).json({ message: "User not found" });
         }
         const isMatch = await user.comparePassword(password);
-        if(!isMatch){
-            return res.status(401).send("Invalid email or password");
+        if(!isMatch) {
+            return res.status(401).json({ message: "Invalid email or password" });
         }
-        res.cookie('jwt',createToken(user.email,user.id),{
-            maxAge:maxAge,
-            secure:true,
-            sameSite:'None'
-        });
-        return res.status(200).json({ user:{
-            id:user.id,
-            email:user.email,
-            profileSetup:user.profileSetup,
-            firstName:user.firstName,
-            lastName:user.lastName,
-            image:user.image,
-            color:user.color,
-        },
-     });
-    } catch (error) {
-        console.log({error});
-        return res.status(500).send("Internal server error");
-    }
 
-}
+        const token = createToken(user.email, user._id);
+        
+        res.cookie('jwt', token, {
+            maxAge: maxAge,
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None'
+        });
+
+        return res.status(200).json({ 
+            user: {
+                id: user._id,
+                email: user.email,
+                profileSetup: user.profileSetup,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                image: user.image,
+                color: user.color,
+            }
+        });
+    } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
 
 exports.getUserInfo = async (req, res,next) => {
     try {
@@ -95,7 +101,7 @@ exports.getUserInfo = async (req, res,next) => {
             return res.status(404).send("User not found");
         }
         
-        return res.status(200).json({ user:{
+        return res.status(200).json({ 
             id:userData.id,
             email:userData.email,
             profileSetup:userData.profileSetup,
@@ -103,11 +109,122 @@ exports.getUserInfo = async (req, res,next) => {
             lastName:userData.lastName,
             image:userData.image,
             color:userData.color,
-        },
+        
      });
     } catch (error) {
         console.log({error});
         return res.status(500).send("Internal server error");
     }
 
+}
+
+exports.updateProfile = async (req, res,next) => {
+    try {
+
+        const {userId} = req;
+        const {firstName, lastName, color} = req.body;
+        if(!firstName || !lastName || color ===null){
+            return res.status(400).send("firstname, lastname and color are required");
+        }
+        
+        const userData = await User.findByIdAndUpdate(userId, {firstName, lastName, color,profileSetup:true}, {new:true, runValidators:true});
+
+        return res.status(200).json({ 
+            id:userData.id,
+            email:userData.email,
+            profileSetup:userData.profileSetup,
+            firstName:userData.firstName,
+            lastName:userData.lastName,
+            image:userData.image,
+            color:userData.color,
+        
+     });
+    } catch (error) {
+        console.log({error});
+        return res.status(500).send("Internal server error");
+    }
+
+}
+
+exports.addProfileImage = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "Profile image is required" });
+        }
+
+        // Log for debugging
+        console.log("Received file:", req.file);
+
+        // Use the file path as provided by multer
+        const filePath = req.file.path.replace(/\\/g, '/'); // Convert Windows path to URL format
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.userId,
+            { image: filePath },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            // Cleanup file if user update fails
+            try {
+                unlinkSync(req.file.path);
+            } catch (err) {
+                console.error('File cleanup error:', err);
+            }
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({
+            image: filePath
+        });
+    } catch (error) {
+        console.error('Profile image upload error:', error);
+        // Cleanup file on error
+        if (req.file?.path) {
+            try {
+                unlinkSync(req.file.path);
+            } catch (err) {
+                console.error('File cleanup error:', err);
+            }
+        }
+        return res.status(500).json({ message: "Failed to process image upload" });
+    }
+};
+
+exports.removeProfileImage = async (req, res, next) => {
+    try {
+        const {userId} = req;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+
+        if (user.image) {
+            try {
+                unlinkSync(user.image);
+            } catch (err) {
+                console.log("Error deleting file:", err);
+            }
+        }
+
+        user.image = null;
+        await user.save();
+
+        return res.status(200).json({ message: "Profile image removed successfully" });
+    } catch (error) {
+        console.log({error});
+        return res.status(500).send("Internal server error");
+    }
+}
+
+exports.logout = async (req, res, next) => {
+    try{
+        res.cookie('jwt', '', { maxAge: 1 ,secure: true, sameSite: 'None'});
+        res.status(200).send("Logged out successfully");
+    }catch(error){
+        console.log({error});
+        return res.status(500).send("Internal server error");
+    }
 }
