@@ -317,8 +317,8 @@ export const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
     auth: {
-        user:"b24122@students.iitmandi.ac.in",
-        pass:"zlau hpxl rsxz dqxs",
+        user:"blundermonkey820@gmail.com",
+        pass:"hnli cyls atwg nawo",
     }
 });
   
