@@ -8,7 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client.js';
-import { LOGIN_ROUTE, SIGNUP_ROUTE, SEND_OTP, VERIFY_OTP,RESET_PASSWORD } from '@/utils/constants';
+import {
+  LOGIN_ROUTE,
+  SIGNUP_ROUTE,
+  SEND_OTP,
+  VERIFY_OTP,
+  RESET_PASSWORD,
+  CHECK_EMAIL,
+  CHECK_EMAIL_EXISTS,
+} from '@/utils/constants';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -16,6 +24,8 @@ import { useGoogleLogin } from '@react-oauth/google';
 const Auth = () => {
   const navigate = useNavigate();
   const { setUserInfo } = useAppStore();
+
+  // State Variables
   const [password, setPassword] = useState('');
   const [confirmpassword, setConfirmPassword] = useState('');
   const [googleEmail, setGoogleEmail] = useState(null);
@@ -26,14 +36,16 @@ const Auth = () => {
   const [isOTPSent, setIsOTPSent] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState(''); 
-  const [resetOtp, setResetOtp] = useState(''); 
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
   const [isResetOTPSent, setIsResetOTPSent] = useState(false);
   const [isResetOTPVerified, setIsResetOTPVerified] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingForget, setIsLoadingForget] = useState(false);
 
-
+  // Google Authentication Handlers
   const handleGoogleAuthLogin = useGoogleLogin({
     onSuccess: async (response) => {
       try {
@@ -42,10 +54,12 @@ const Auth = () => {
           toast.error('Failed to retrieve access token from Google');
           return;
         }
+
         const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${access_token}` },
         });
         const userInfo = await userInfoResponse.json();
+
         if (userInfo?.email) {
           setGoogleLoginEmail(userInfo.email);
           handleGoogleLogin(userInfo.email);
@@ -84,40 +98,7 @@ const Auth = () => {
     }
   };
 
-  const handleGoogleAuth = useGoogleLogin({
-    onSuccess: async (response) => {
-      try {
-        const { access_token } = response;
-        if (!access_token) {
-          toast.error('Failed to retrieve access token from Google');
-          return;
-        }
-        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${access_token}` },
-        });
-        const userInfo = await userInfoResponse.json();
-        if (userInfo?.email) {
-          setGoogleEmail(userInfo.email);
-          setIsVerified(true);
-          toast.success(`Google email verified: ${userInfo.email}`);
-          setIsEmailVerified(true);
-        } else {
-          throw new Error('Failed to retrieve email from Google');
-        }
-      } catch (error) {
-        console.error('Error fetching Google user info:', error);
-        toast.error('Google Verification failed');
-        setGoogleEmail(null);
-        setIsVerified(false);
-      }
-    },
-    onError: () => {
-      toast.error('Google Verification failed');
-      setGoogleEmail(null);
-      setIsVerified(false);
-    },
-  });
-
+  // Form Validation
   const validateLogin = () => {
     if (!email) {
       toast.error('Email is required');
@@ -130,6 +111,23 @@ const Auth = () => {
     return true;
   };
 
+  const validateSignup = () => {
+    if (!googleEmail) {
+      toast.error('Please verify your email using Google Auth');
+      return false;
+    }
+    if (!password) {
+      toast.error('Password is required');
+      return false;
+    }
+    if (password !== confirmpassword) {
+      toast.error('Passwords do not match');
+      return false;
+    }
+    return true;
+  };
+
+  // Login Handler
   const handleLogin = async () => {
     if (validateLogin()) {
       try {
@@ -149,22 +147,7 @@ const Auth = () => {
     }
   };
 
-  const validateSignup = () => {
-    if (!googleEmail) {
-      toast.error('Please verify your email using Google Auth');
-      return false;
-    }
-    if (!password) {
-      toast.error('Password is required');
-      return false;
-    }
-    if (password !== confirmpassword) {
-      toast.error('Passwords do not match');
-      return false;
-    }
-    return true;
-  };
-
+  // Signup Handler
   const handleSignup = async () => {
     if (validateSignup()) {
       try {
@@ -189,14 +172,22 @@ const Auth = () => {
     }
   };
 
+  // OTP Handlers
   const handleSendOTP = async () => {
+    setIsLoading(true);
     try {
-      await apiClient.post(SEND_OTP, { email }, { withCredentials: true });
-      setIsOTPSent(true);
-      toast.success(`OTP sent to ${email}`);
+      const emailCheckResponse = await apiClient.post(CHECK_EMAIL, { email }, { withCredentials: true });
+
+      if (emailCheckResponse.status === 200) {
+        await apiClient.post(SEND_OTP, { email }, { withCredentials: true });
+        setIsOTPSent(true);
+        toast.success(`OTP sent to ${email}`);
+      }
     } catch (error) {
-      console.error('Error sending OTP:', error);
+      console.error('Error during email check or OTP sending:', error);
       toast.error(error.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -216,17 +207,25 @@ const Auth = () => {
     }
   };
 
+  // Reset Password Handlers
   const handleResetSendOTP = async () => {
+    setIsLoadingForget(true);
     try {
-      await apiClient.post(SEND_OTP, { email: resetEmail }, { withCredentials: true });
-      setIsResetOTPSent(true);
-      toast.success(`OTP sent to ${resetEmail}`);
+      const emailCheckResponse = await apiClient.post(CHECK_EMAIL_EXISTS, { email: resetEmail }, { withCredentials: true });
+
+      if (emailCheckResponse.status === 200) {
+        await apiClient.post(SEND_OTP, { email: resetEmail }, { withCredentials: true });
+        setIsResetOTPSent(true);
+        toast.success(`OTP sent to ${resetEmail}`);
+      }
     } catch (error) {
       console.error('Error sending reset OTP:', error);
       toast.error(error.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setIsLoadingForget(false);
     }
   };
-  
+
   const handleResetVerifyOTP = async () => {
     try {
       if (!resetOtp) {
@@ -241,7 +240,52 @@ const Auth = () => {
       toast.error(error.response?.data?.message || 'OTP verification failed');
     }
   };
+
+  const handleGoogleAuth = useGoogleLogin({
+    onSuccess: async (response) => {
+      try {
+        const { access_token } = response;
+        
+        if (!access_token) {
+          toast.error('Failed to retrieve access token from Google');
+          return;
+        }
+        
+        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${access_token}` },
+        });
+        const userInfo = await userInfoResponse.json();
+        
+        if (!userInfo?.email) {
+          throw new Error('Failed to retrieve email from Google');
+        }
+        
+        const emailCheckResponse = await apiClient.post(CHECK_EMAIL, { email: userInfo.email }, { withCredentials: true });
+        if (emailCheckResponse.status === 200) {
+          setGoogleEmail(userInfo.email);
+          setIsVerified(true);
+          setIsEmailVerified(true);
+          toast.success(`Google email verified: ${userInfo.email}`);
+        } else {
+          toast.error(`Email ${userInfo.email} already exists`);
+        }
+      } catch (error) {
+        console.error('Error during Google authentication:', error);
+        toast.error(error.response?.data?.message || 'Error in Email Verification');
+        setGoogleEmail(null);
+        setIsVerified(false);
+        setIsEmailVerified(false);
+      }
+    },
+    onError: () => {
+      toast.error('Google Verification failed');
+      setGoogleEmail(null);
+      setIsVerified(false);
+      setIsEmailVerified(false);
+    },
+  });
   
+
   const handleResetPassword = async () => {
     if (newPassword !== confirmNewPassword) {
       toast.error('Passwords do not match');
@@ -260,8 +304,6 @@ const Auth = () => {
       toast.error(error.response?.data?.message || 'Password reset failed');
     }
   };
-  
-
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">
       <div className="h-[80vh] items-center justify-center bg-white border-2 border-white text-opacity-90 shadow-2xl w-[80vw] md:w-[90vw] lg:w-[70vw] xl:w-[60vw] rounded-3xl grid xl:grid-cols-2">
@@ -362,8 +404,22 @@ const Auth = () => {
             className="rounded-full p-6 bg-purple-500 text-white"
             onClick={() =>  handleResetSendOTP()}
           >
-            Send OTP
+            {isLoadingForget ? (
+          <div className="flex items-center justify-center">
+            <span className="animate-bounce mr-1">.</span>
+            <span className="animate-bounce delay-200 mr-1">.</span>
+            <span className="animate-bounce delay-400">.</span>
+          </div>
+        ) : (
+          "Send OTP"
+        )}
           </Button>
+          <button
+          className="text-sm font-medium text-purple-500 hover:underline mt-3"
+          onClick={() => setIsForgotPassword(false)}
+        >
+          Back to Login
+        </button>
         </>
       )}
 
@@ -385,6 +441,12 @@ const Auth = () => {
           >
             Verify OTP
           </Button>
+          <button
+          className="text-sm font-medium text-purple-500 hover:underline mt-3"
+          onClick={() => setIsForgotPassword(false)}
+        >
+          Back to Login
+        </button>
         </>
       )}
 
@@ -414,6 +476,12 @@ const Auth = () => {
           >
             Reset Password
           </Button>
+          <button
+          className="text-sm font-medium text-purple-500 hover:underline mt-3"
+          onClick={() => setIsForgotPassword(false)}
+        >
+          Back to Login
+        </button>
         </>
       )}
     </div>
@@ -482,7 +550,15 @@ const Auth = () => {
           className="rounded-full p-3 bg-purple-500 text-white text-sm font-medium"
           onClick={() => handleSendOTP()}
         >
-          Send OTP
+          {isLoading ? (
+          <div className="flex items-center justify-center">
+            <span className="animate-bounce mr-1">.</span>
+            <span className="animate-bounce delay-200 mr-1">.</span>
+            <span className="animate-bounce delay-400">.</span>
+          </div>
+        ) : (
+          "Send OTP"
+        )}
         </Button>
       </div>
 
@@ -520,6 +596,7 @@ const Auth = () => {
     </div>
   );
 };
+
 
 export default Auth;
 

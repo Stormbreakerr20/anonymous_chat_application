@@ -18,6 +18,51 @@ const createToken = (email, userId) => {
     }
 };
 
+
+
+
+export const checkEmailExist = async (req, res, next) => {
+    try {
+        const { email} = req.body;
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+        
+        const existingUser = await User.findOne({ email });
+        if (!existingUser) {
+            return res.status(400).json({ message: "Email does not exists" });
+        }
+        else return res.status(200).json({ message: "Email Exists" });
+    } catch (error) {
+        console.error("Signup error:", error);
+        return res.status(500).json({ message: error.message || "Internal server error" });
+    }
+};
+
+
+
+
+
+export const checkEmail = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: "Email are required" });
+        }
+        
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already exists" });
+        }
+        else return res.status(200).json({ message: "Valid Email" });
+    } catch (error) {
+        console.error("Signup error:", error);
+        return res.status(500).json({ message: error.message || "Internal server error" });
+    }
+};
+
+
+
 export const signup = async (req, res, next) => {
     try {
         const { email, password } = req.body;

@@ -14,3 +14,5 @@ export const LOGOUT_ROUTE = `${AUTH_ROUTES}/logout`;
 export const SEND_OTP=`${AUTH_ROUTES}/send-otp`;
 export const VERIFY_OTP=`${AUTH_ROUTES}/verify-otp`;
 export const RESET_PASSWORD=`${AUTH_ROUTES}/reset-password`;
+export const CHECK_EMAIL=`${AUTH_ROUTES}/check-email`;
+export const CHECK_EMAIL_EXISTS=`${AUTH_ROUTES}/check-email-exists`;
