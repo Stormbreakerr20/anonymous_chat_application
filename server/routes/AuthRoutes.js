@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signup, login, getUserInfo, updateProfile, addProfileImage, removeProfileImage, logout } from "../controllers/AuthController.js";
+import { signup, login, getUserInfo, updateProfile, addProfileImage, removeProfileImage, logout, sendOTP, verifyOTP,resetPassword } from "../controllers/AuthController.js";
 import { verifyToken } from "../middlewares/AuthMiddleware.js";
 import multer from "multer";
 import { existsSync, mkdirSync } from 'fs';
@@ -44,6 +44,9 @@ authRoutes.post('/update-profile',verifyToken,updateProfile);
 authRoutes.post('/add-profile-image',verifyToken,upload.single('profile-image'),addProfileImage);
 authRoutes.delete('/remove-profile-image',verifyToken,removeProfileImage);
 authRoutes.post('/logout', logout);
+authRoutes.post("/send-otp", sendOTP);
+authRoutes.post("/verify-otp", verifyOTP);
+authRoutes.post("/reset-password",resetPassword)
 
 
 export default authRoutes;

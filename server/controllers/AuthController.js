@@ -2,6 +2,11 @@ import User from "../models/UserModel.js";
 import pkg from 'jsonwebtoken';
 const {sign} = pkg;
 import {renameSync , unlinkSync} from "fs";
+import nodemailer from 'nodemailer';
+import UserOTPVerification from "../models/UserOTPVerification.js";
+// import pkg from 'bcryptjs';
+
+
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (email, userId) => {
@@ -257,4 +262,154 @@ export const logout = async (req, res, next) => {
         return res.status(500).send("Internal server error");
     }
 }
+
+
+
+
+export const transporter = nodemailer.createTransport({
+    
+    service: "gmail",
+  port: 465,
+  secure: true,
+    auth: {
+        user:"b24122@students.iitmandi.ac.in",
+        pass:"zlau hpxl rsxz dqxs",
+    }
+});
+  
+// Generate OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+// Send OTP Controller
+export const sendOTP = async (req, res) => {
+    const { email } = req.body;
+
+    console.log("Received request to send OTP for email:", email);
+
+    if (!email) {
+        console.log("Error: Email is missing in the request.");
+        return res.status(400).json({ message: "Email is required" });
+    }
+
+    try {
+        const otp = generateOTP();
+        const now = new Date();
+        const otpExpiration = new Date(now.getTime() + 5 * 60 * 1000);
+
+        console.log("Generated OTP:", otp);
+        console.log("OTP expiration time:", otpExpiration);
+
+        console.log("Attempting to create OTP record in the database...");
+        const otpRecord = await UserOTPVerification.create({
+            email,
+            otp,
+            createdAt: now,
+            expiresAt: otpExpiration,
+        });
+
+        console.log("OTP record created successfully:", otpRecord);
+
+        const mailOptions = {
+            from: process.env.AUTH_EMAIL,
+            to: email,
+            subject: "Your OTP Code for Anonymous Chat",
+            text: `Your OTP is: ${otp}. It will expire in 5 minutes.`, // Optional plain text
+            html: `
+                <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+                    <div style="max-width: 400px; margin: 20px auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #f9f9f9;">
+                        <h2 style="color: #4CAF50; text-align: center; margin-bottom: 20px;">Anonymous Chat OTP</h2>
+                        <p>Dear User,</p>
+                        <p>Here is your one-time password (OTP) for Anonymous Chat:</p>
+                        <div style="text-align: center; margin: 20px auto; font-size: 24px; font-weight: bold; color: #333; border: 1px dashed #4CAF50; border-radius: 4px; padding: 10px; background-color: #fff;">
+                            ${otp}
+                        </div>
+                        <p>This OTP is valid for <strong>5 minutes</strong>.</p>
+                        <p>If you didn’t request this, please ignore this email.</p>
+                        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                        <p style="text-align: center; font-size: 12px; color: #999;">
+                            Anonymous Chat Team | Secure & Private Conversations
+                        </p>
+                    </div>
+                </div>
+            `,
+        };
+        
+        console.log("Mail options prepared:", mailOptions);
+
+        console.log("Verifying SMTP transporter...");
+        transporter.verify((error) => {
+            if (error) {
+                console.error("SMTP connection error:", error);
+                return res.status(500).json({ message: "SMTP connection failed" });
+            }
+            console.log("SMTP transporter verified successfully.");
+        });
+
+        console.log("Attempting to send email...");
+        const emailResponse = await transporter.sendMail(mailOptions);
+        console.log("Email sent successfully:", emailResponse);
+
+        return res.status(200).json({ message: "OTP sent successfully" });
+    } catch (error) {
+        console.error("Error during OTP sending process:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+// Verify OTP Controller
+export const verifyOTP = async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ message: "Email and OTP are required" });
+  }
+
+  try {
+    const otpRecord = await UserOTPVerification.findOne({ email, otp });
+
+    if (!otpRecord) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    if (otpRecord.expiresAt < new Date()) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    await UserOTPVerification.deleteOne({ email, otp });
+
+    res.status(200).json({ message: "OTP verified successfully" });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+export const resetPassword = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+  
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+      }
+  
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+    //   const salt = await genSalt(10);
+    //   user.password = await hash(password, salt);
+      user.password=password;
+      await user.save();
+  
+      return res.status(200).json({ message: 'Password reset successfully' });
+    } catch (error) {
+      return res.status(500).json({ message: error.message || 'Internal server error' });
+    }
+  };
+  
+
 
