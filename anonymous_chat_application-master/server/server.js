@@ -7,11 +7,11 @@ const channelRoutes = require('./routes/channelRoutes');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/AuthRoutes.js');
+const { app, server } = require('./socket/socket.js')
 const { existsSync, mkdirSync } =require('fs');
 const contactRoutes = require("./routes/ContactRoutes.js");
 
-const app = express();
-const server = http.createServer(app);
+
 const io = new Server(server, {
     cors: {
         origin: "http://localhost:5173",
