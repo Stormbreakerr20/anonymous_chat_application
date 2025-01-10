@@ -40,7 +40,15 @@ io.on('connection',async(socket)=>{
     const user = await getUserDetailsFromToken(token)
 
     //create a room
-    socket.join(user?._id.toString())
+
+    console.log(user);
+    if (user?._id) {
+        socket.join(user._id.toString());
+    } else {
+        console.error("User or User ID is undefined");
+    }
+    
+    
     onlineUser.add(user?._id?.toString())
 
     io.emit('onlineUser',Array.from(onlineUser))
