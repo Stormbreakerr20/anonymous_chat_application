@@ -26,11 +26,11 @@ const onlineUser = new Set()
 
 io.on('connection',async(socket)=>{
     console.log("connect User ", socket.id)
-    console.log(socket.handshake)
+    // console.log(socket.handshake)
     const cookies = cookie.parse(socket.handshake.headers.cookie || ''); // Parse the cookies from the headers
 
     const token = cookies.jwt;
-    console.log(token);
+    // console.log(token);
     // if (!token) {
     //     console.log("Token notprovided");
     //     socket.disconnect();  // Disconnect the client if no token is present
