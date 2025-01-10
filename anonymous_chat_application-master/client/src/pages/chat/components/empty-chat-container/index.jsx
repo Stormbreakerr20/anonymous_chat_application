@@ -114,7 +114,7 @@ EmptyChatContainer.propTypes = {
   selectedChannel: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   messages: PropTypes.arrayOf(
     PropTypes.shape({
       _id: PropTypes.string.isRequired,

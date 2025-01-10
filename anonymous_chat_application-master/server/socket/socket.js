@@ -2,31 +2,42 @@ const express = require('express')
 const { Server } = require('socket.io')
 const http  = require('http')
 const { verifyToken } = require("../middlewares/AuthMiddleware.js");
-const User = require('../models/UserModel')
+const getUserDetailsFromToken = require('../helpers/getUserDetailsFromToken')
+const UserModel = require('../models/UserModel')
 const { DirectMessageModel, ConversationModel } = require("../models/ConversationModel.js");
 const getConversation = require('../helpers/getConversation')
+const cookie = require('cookie');
 
 const app = express()
 
 /***socket connection */
 const server = http.createServer(app)
-const io = new Server(server,{
-    cors : {
-        origin : process.env.FRONTEND_URL,
-        credentials : true
-    }
-})
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization']
+    },
+});
 
 
 const onlineUser = new Set()
 
 io.on('connection',async(socket)=>{
     console.log("connect User ", socket.id)
+    console.log(socket.handshake)
+    const cookies = cookie.parse(socket.handshake.headers.cookie || ''); // Parse the cookies from the headers
 
-    const token = socket.handshake.auth.token 
-
+    const token = cookies.jwt;
+    console.log(token);
+    // if (!token) {
+    //     console.log("Token notprovided");
+    //     socket.disconnect();  // Disconnect the client if no token is present
+    //     return;
+    // }
     //current user details 
-    const user = await verifyToken(token)
+    const user = await getUserDetailsFromToken(token)
 
     //create a room
     socket.join(user?._id.toString())
@@ -146,7 +157,17 @@ io.on('connection',async(socket)=>{
         io.to(user?._id?.toString()).emit('conversation',conversationSender)
         io.to(msgByUserId).emit('conversation',conversationReceiver)
     })
+    socket.on('newMessage', (message) => {
+        console.log('Broadcasting new message to channel:', message.channelId);
+        
+        io.emit('receiveMessage', message);
+});
 
+
+    // Real-time channel updates
+    socket.on('newChannel', (channel) => {
+        io.emit('channelCreated', channel);
+    });
     //disconnect
     socket.on('disconnect',()=>{
         onlineUser.delete(user?._id?.toString())
