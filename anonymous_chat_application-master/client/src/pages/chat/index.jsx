@@ -191,13 +191,14 @@
 
 // export default Chat;
 
-
 import { useAppStore } from "@/store";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import ContactsContainer from "./components/contacts-container";
 import EmptyChatContainer from "./components/empty-chat-container";
+import axios from 'axios';
+
 
 const Chat = () => {
   const { userInfo } = useAppStore();
@@ -206,6 +207,7 @@ const Chat = () => {
   const [channels, setChannels] = useState([]);
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [messages, setMessages] = useState([]);
+  // const [image, setImage] = useState(null); // For storing the selected image
 
   useEffect(() => {
     if (!userInfo.profileSetup) {
@@ -231,6 +233,39 @@ const Chat = () => {
       .catch((err) => console.error("Error fetching messages:", err));
   };
 
+  // Handle the image file upload
+  // const handleImageUpload = async () => {
+  //   if (!image) {
+  //     toast.error("Please select an image before uploading!");
+  //     return;
+  //   }
+
+  //   try {
+  //     // Request signature from backend
+  //     const { data: { signature, timestamp, cloudName, apiKey } } = await axios.post('http://localhost:3000/api/cloudinary/get-signature');
+
+  //     // Prepare form data for Cloudinary upload
+  //     const formData = new FormData();
+  //     formData.append('file', image);  // The file selected by the user
+  //     formData.append('timestamp', timestamp);  // From backend
+  //     formData.append('api_key', apiKey);  // From backend
+  //     formData.append('signature', signature);  // From backend
+
+  //     // Upload the file to Cloudinary
+  //     const uploadResponse = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
+
+  //     const { secure_url } = uploadResponse.data;  // Get the URL of the uploaded image
+  //     toast.success("Image uploaded successfully!");
+  //     console.log("Uploaded image URL:", secure_url);
+
+  //     // Reset the selected image
+  //     setImage(null);
+  //   } catch (error) {
+  //     console.error("Error uploading image:", error);
+  //     toast.error("Image upload failed");
+  //   }
+  // };
+
   return (
     <div className="flex h-[100vh] text-white overflow-hidden">
       {/* Pass selectedChannel and handleSelectChannel to ContactsContainer */}
@@ -244,6 +279,33 @@ const Chat = () => {
         selectedChannel={selectedChannel} 
         messages={messages} 
       />
+
+      {/* Upload Button
+      <div className="absolute bottom-10 right-10">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImage(e.target.files[0])}  // Store the selected image in state
+          className="hidden"
+          id="file-upload"
+        />
+        <label htmlFor="file-upload" className="cursor-pointer">
+          <button
+            type="button"
+            onClick={() => document.getElementById('file-upload').click()} // Trigger input click
+            className="bg-blue-500 text-white p-2 rounded-full shadow-md hover:bg-blue-600"
+          >
+            Select Image
+          </button>
+        </label>
+        <button
+          type="button"
+          onClick={handleSendMessage} // Upload image on click
+          className="bg-green-500 text-white p-2 ml-4 rounded-full shadow-md hover:bg-green-600"
+        >
+          Upload Image
+        </button>
+      </div> */}
     </div>
   );
 };

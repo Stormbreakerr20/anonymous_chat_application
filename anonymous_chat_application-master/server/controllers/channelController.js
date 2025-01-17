@@ -1,6 +1,7 @@
 const Channel = require('../models/Channel');
 const Message = require('../models/Message');
 const Users = require('../models/UserModel');
+const cloudinary = require('../config/cloudinaryConfig');
 
 const mongoose = require('mongoose');
 // Fetch all channels
@@ -46,11 +47,35 @@ exports.createChannel = async (req, res) => {
 // Post a new message in a channel
 exports.postMessage = async (req, res) => {
     const { channelId } = req.params;
-    const { userId,content } = req.body; // Assume userId is passed via the frontend
+    const { userId,content,imageUrl } = req.body; // Assume userId is passed via the frontend
+
     try {
-        const newMessage = await Message.create({ channelId,userId, content });
+        const newMessage = await Message.create({ channelId,userId, content,imageUrl });
         res.status(201).json({ success: true, message: newMessage });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+exports.get_signature = async (req, res) => {
+    try {
+        const timestamp = Math.round(new Date().getTime() / 1000);
+
+    const signature = cloudinary.utils.api_sign_request(
+        { timestamp },
+        process.env.CLOUDINARY_API_SECRET
+    );
+
+    res.status(200).json({
+        signature,
+        timestamp,
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+        apiKey: process.env.CLOUDINARY_API_KEY,
+
+    });
+    } catch (error) {
+        console.log({error});
+        return res.status(500).send("Internal server error");
     }
 };

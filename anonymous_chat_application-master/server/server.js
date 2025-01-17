@@ -9,6 +9,9 @@ const authRoutes = require('./routes/AuthRoutes.js');
 const { app, server } = require('./socket/socket.js')
 const { existsSync, mkdirSync } =require('fs');
 const contactRoutes = require("./routes/ContactRoutes.js");
+const cloudinaryRoutes = require('./routes/cloudinaryRoutes');
+
+
 
 app.use(express.json());
 app.use(cookieParser());
@@ -30,6 +33,7 @@ app.use('/uploads/profiles', express.static('uploads/profiles'));
 app.use('/api/channels', channelRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/contacts', contactRoutes);
+app.use('/api/cloudinary', cloudinaryRoutes);
 
 // Database Connection
 mongoose
