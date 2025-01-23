@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import NewDM from "..pages/chat/components/contacts-container/components/new-dm/index.jsx";
-import MessagePage from "../pages/chat/components/contacts-container/components/new-dm/messagePage.jsx";
+import MessagePage from "../pages/chat/components/contacts-container/components/new-dm/MessagePage.jsx";
 
 function App() {
     return (

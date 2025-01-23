@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
+// import { useSelector } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'
 import Avatar from './Avatar'
 import { HiDotsVertical } from "react-icons/hi";
@@ -7,17 +7,27 @@ import { FaAngleLeft } from "react-icons/fa6";
 import { FaPlus } from "react-icons/fa6";
 import { FaImage } from "react-icons/fa6";
 import { FaVideo } from "react-icons/fa6";
-import uploadFile from '../helpers/uploadFile';
+import uploadFile from '../../../../../../helpers/uploadFile';
 import { IoClose } from "react-icons/io5";
 import Loading from './Loading';
-import backgroundImage from '../assets/wallapaper.jpeg'
+// import backgroundImage from '../assets/wallapaper.jpeg'
+import { useAppStore } from '@/store';
 import { IoMdSend } from "react-icons/io";
 import moment from 'moment'
 
 const MessagePage = () => {
   const params = useParams()
-  const socketConnection = useSelector(state => state?.user?.socketConnection)
-  const user = useSelector(state => state?.user)
+  const socketConnection = useAppStore((state) => state.socket);
+  const user = useAppStore((state) => state.userInfo);
+  console.log(socketConnection)
+  if (socketConnection?.connected) {
+    console.log('Socket is connected:', socketConnection.id);
+} else {
+    console.error('Socket is not connected.');
+}
+
+  // console.log(user)
+  
   const [dataUser,setDataUser] = useState({
     name : "",
     email : "",
@@ -34,7 +44,7 @@ const MessagePage = () => {
   const [loading,setLoading] = useState(false)
   const [allMessage,setAllMessage] = useState([])
   const currentMessage = useRef(null)
-
+// console.log("HEy there :",allMessage)
   useEffect(()=>{
       if(currentMessage.current){
           currentMessage.current.scrollIntoView({behavior : 'smooth', block : 'end'})
@@ -95,20 +105,26 @@ const MessagePage = () => {
 
   useEffect(()=>{
       if(socketConnection){
+        console.log('Emitting message-page event with userId:', params.userId);
         socketConnection.emit('message-page',params.userId)
 
         socketConnection.emit('seen',params.userId)
 
         socketConnection.on('message-user',(data)=>{
+          // console.log("data is:", data)
           setDataUser(data)
         }) 
         
         socketConnection.on('message',(data)=>{
-          console.log('message data',data)
+          // console.log('message data',data)
           setAllMessage(data)
         })
 
-
+        socketConnection.on('directmessage', (newMessage) => {
+          // Append the new message to the existing list of messages
+          // console.log('Real-time message received:', newMessage);
+          setAllMessage(newMessage);
+    });
       }
   },[socketConnection,params?.userId,user])
 
@@ -129,12 +145,12 @@ const MessagePage = () => {
     if(message.text || message.imageUrl || message.videoUrl){
       if(socketConnection){
         socketConnection.emit('new message',{
-          sender : user?._id,
+          sender : user?.id,
           receiver : params.userId,
           text : message.text,
           imageUrl : message.imageUrl,
           videoUrl : message.videoUrl,
-          msgByUserId : user?._id
+          msgByUserId : user?.id
         })
         setMessage({
           text : "",
@@ -147,7 +163,7 @@ const MessagePage = () => {
 
 
   return (
-    <div style={{ backgroundImage : `url(${backgroundImage})`}} className='bg-no-repeat bg-cover'>
+    <div  className='bg-no-repeat bg-cover'>
           <header className='sticky top-0 h-16 bg-white flex justify-between items-center px-4'>
               <div className='flex items-center gap-4'>
                   <Link to={"/"} className='lg:hidden'>
@@ -188,7 +204,7 @@ const MessagePage = () => {
                     {
                       allMessage.map((msg,index)=>{
                         return(
-                          <div className={` p-1 py-1 rounded w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${user._id === msg?.msgByUserId ? "ml-auto bg-teal-100" : "bg-white"}`}>
+                          <div key={index} className={` p-1 py-1 rounded w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${user._id === msg?.msgByUserId ? "ml-auto bg-teal-100" : "bg-white"}`}>
                             <div className='w-full relative'>
                               {
                                 msg?.imageUrl && (
@@ -215,6 +231,9 @@ const MessagePage = () => {
                       })
                     }
                   </div>
+
+
+                   
 
 
                   {/**upload Image display */}

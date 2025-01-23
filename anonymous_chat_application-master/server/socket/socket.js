@@ -25,11 +25,14 @@ const io = new Server(server, {
 const onlineUser = new Set()
 
 io.on('connection',async(socket)=>{
-    console.log("connect User ", socket.id)
+    // console.log("connect User ", socket.id)
     // console.log(socket.handshake)
     const cookies = cookie.parse(socket.handshake.headers.cookie || ''); // Parse the cookies from the headers
+// console.log('Cookies:', socket.handshake.headers.cookie);
 
     const token = cookies.jwt;
+    // const token = req.cookies.jwt;
+    // console.log(socket.handshake)
     // console.log(token);
     // if (!token) {
     //     console.log("Token notprovided");
@@ -40,8 +43,8 @@ io.on('connection',async(socket)=>{
     const user = await getUserDetailsFromToken(token)
 
     //create a room
-
-    console.log(user);
+    // console.log("User is ")
+    // console.log(user.firstName);
     if (user?._id) {
         socket.join(user._id.toString());
     } else {
@@ -50,16 +53,15 @@ io.on('connection',async(socket)=>{
     
     
     onlineUser.add(user?._id?.toString())
-
     io.emit('onlineUser',Array.from(onlineUser))
 
     socket.on('message-page',async(userId)=>{
         console.log('userId',userId)
-        const userDetails = await User.findById(userId).select("-password")
-        
+        const userDetails = await UserModel.findById(userId).select("-password")
+        // console.log(userDetails)
         const payload = {
             _id : userDetails?._id,
-            name : userDetails?.name,
+            name : userDetails?.firstName,
             email : userDetails?.email,
             profile_pic : userDetails?.profile_pic,
             online : onlineUser.has(userId)
@@ -74,7 +76,10 @@ io.on('connection',async(socket)=>{
                 { sender : userId, receiver :  user?._id}
             ]
         }).populate('messages').sort({ updatedAt : -1 })
+        // console.log("Sender:", user?._id);
+        //  console.log("Receiver:", userId);
 
+        // console.log("hellow",getConversationMessage)
         socket.emit('message',getConversationMessage?.messages || [])
     })
 
@@ -83,7 +88,7 @@ io.on('connection',async(socket)=>{
     socket.on('new message',async(data)=>{
 
         //check conversation is available both user
-
+        // console.log("data",data)
         let conversation = await ConversationModel.findOne({
             "$or" : [
                 { sender : data?.sender, receiver : data?.receiver },

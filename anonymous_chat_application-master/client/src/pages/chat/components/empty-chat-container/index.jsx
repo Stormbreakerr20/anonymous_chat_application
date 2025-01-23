@@ -160,21 +160,4 @@ const EmptyChatContainer = ({ selectedChannel, messages }) => {
   );
 };
 
-// PropTypes validation
-EmptyChatContainer.propTypes = {
-  selectedChannel: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  messages: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      userId: PropTypes.shape({
-        name: PropTypes.string,
-      }).isRequired,
-      content: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-};
-
 export default EmptyChatContainer;

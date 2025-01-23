@@ -54,6 +54,7 @@ const Auth = () => {
             const response = await apiClient.post(LOGIN_ROUTE, {email, password},{withCredentials:true});
             if(response.data?.user?.id){
                 setUserInfo(response.data.user);
+                
                 if(response.data.user.profileSetup){
                     navigate('/chat');
                 } else {
@@ -73,6 +74,7 @@ const handleSignup = async () => {
             const response = await apiClient.post(SIGNUP_ROUTE, {email, password},{withCredentials : true});
             if(response.status === 201 && response.data?.user){
                 setUserInfo(response.data.user);
+                console.log(response.data.user);
                 navigate('/profile');
             }
         } catch (error) {
