@@ -11,9 +11,9 @@ const getUserDetailsFromToken = async(token)=>{
     }
     // console.log(token);
     const decode = await jwt.verify(token,process.env.JWT_SECRET)
-
-    const user = await UserModel.findById(decode.id).select('-password')
-
+    // console.log(decode)
+    const user = await UserModel.findById(decode.userId).select('-password')
+    // console.log(user)
     return user
 }
 

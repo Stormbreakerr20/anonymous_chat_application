@@ -191,21 +191,24 @@
 
 // export default Chat;
 
-
 import { useAppStore } from "@/store";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import ContactsContainer from "./components/contacts-container";
 import EmptyChatContainer from "./components/empty-chat-container";
+import axios from 'axios';
+import io from 'socket.io-client';
+// import { useAppStore } from "@/store";
 
 const Chat = () => {
   const { userInfo } = useAppStore();
   const navigate = useNavigate();
-
+  const { setOnlineUser,setSocket} = useAppStore(); 
   const [channels, setChannels] = useState([]);
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [messages, setMessages] = useState([]);
+  // const [image, setImage] = useState(null); // For storing the selected image
 
   useEffect(() => {
     if (!userInfo.profileSetup) {
@@ -222,6 +225,26 @@ const Chat = () => {
       .catch((err) => console.error("Error fetching channels:", err));
   }, []);
 
+  useEffect(() => {
+    const socketConnection = io(import.meta.env.VITE_HOST, {
+      withCredentials: true,
+    });
+    console.log("socket is:", socketConnection)
+    // Set socket connection in Zustand store
+    setSocket(socketConnection);
+
+     socketConnection.on('onlineUser',(data)=>{
+      console.log(data)
+      setOnlineUser(data)
+    })
+
+
+    // Cleanup: disconnect socket on component unmount
+    // return () => {
+    //   socketConnection.disconnect();
+    // };
+  }, [setSocket, setOnlineUser]);
+
   // Handle selecting a channel and fetching its messages
   const handleSelectChannel = (channel) => {
     setSelectedChannel(channel);
@@ -231,6 +254,7 @@ const Chat = () => {
       .catch((err) => console.error("Error fetching messages:", err));
   };
 
+  
   return (
     <div className="flex h-[100vh] text-white overflow-hidden">
       {/* Pass selectedChannel and handleSelectChannel to ContactsContainer */}
@@ -244,6 +268,8 @@ const Chat = () => {
         selectedChannel={selectedChannel} 
         messages={messages} 
       />
+
+      
     </div>
   );
 };

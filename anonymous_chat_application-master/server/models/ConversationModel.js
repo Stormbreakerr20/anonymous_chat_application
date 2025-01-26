@@ -20,7 +20,7 @@ const messageSchema = new mongoose.Schema({
     msgByUserId : {
         type : mongoose.Schema.ObjectId,
         required : true,
-        ref : 'User'
+        ref : 'Users'
     }
 },{
     timestamps : true
@@ -30,17 +30,17 @@ const conversationSchema = new mongoose.Schema({
     sender : {
         type : mongoose.Schema.ObjectId,
         required : true,
-        ref : 'User'
+        ref : 'Users'
     },
     receiver : {
         type : mongoose.Schema.ObjectId,
         required : true,
-        ref : 'User'
+        ref : 'Users'
     },
     messages : [
         {
             type : mongoose.Schema.ObjectId,
-            ref : 'Message'
+            ref : 'DirectMessage'
         }
     ]
 },{
