@@ -32,8 +32,15 @@ exports.getChannelMessages = async (req, res) => {
         }
         // Checking if we have to render the mention option in the ui or not
         const isConfession = channel.name === 'Confessions';
-        const messages = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) })
-            .populate('userId', 'name');
+        if (isConfession) {
+            messages = await ConfessionMessage.find({ channelId: new mongoose.Types.ObjectId(channelId) })
+                .populate('userId', 'name');
+        } else {
+            messages = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) })
+                .populate('userId', 'name');
+        }
+        // const messages = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) })
+        //     .populate('userId', 'name');
         res.status(200).json({ success: true, isConfession, messages });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -64,15 +71,15 @@ exports.postMessage = async (req, res) => {
         if (!channel) {
             return res.status(404).json({ success: false, message: "Channel not found" });
         }
-        if (channel.name === 'Confessions' && mention) {
+        if (channel.name === 'Confessions') {
             // Using the Confession Message schema to save the message
-            const newGeneralMessage = await GeneralMessage.create({ channelId, userId, content });
+            // console.log("hello ")
+            const newGeneralMessage = await ConfessionMessage.create({ channelId, userId, content });
             // Make a POST request to the external URL with the message data
             await axios.post(`${process.env.URL}/api/dm`, {
                 channelId: newGeneralMessage.channelId,
                 userId: newGeneralMessage.isMention,
                 content: newGeneralMessage.content,
-                imageUrl: newGeneralMessage.imageUrl,
                 createdAt: Date.now
             });
             res.status(201).json({ success: true, message: newGeneralMessage });
