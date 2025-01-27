@@ -9,7 +9,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { apiClient } from "@/lib/api-client";
 import { SEARCH_CONTACTS_ROUTES } from "@/utils/constants";
 
-const NewDM = () => {
+const NewDM = ({ onSelecting }) => {
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [searchedContacts, setSearchedContacts] = useState([]);
   const navigate = useNavigate();
@@ -34,9 +34,9 @@ const NewDM = () => {
     }
   };
 
-  const handleSelectUser = (userId) => {
+  const handleSelectContact = (contact) => {
+    onSelecting(contact); // Pass the selected contact back to the parent
     setOpenNewContactModal(false); // Close the modal
-    navigate(`/dm/${userId}`); // Navigate to the MessagePage with the selected user's ID
   };
 
   return (
@@ -72,7 +72,7 @@ const NewDM = () => {
                 <div
                   key={contact._id}
                   className="flex gap-3 items-center cursor-pointer"
-                  onClick={() => handleSelectUser(contact._id)} // Navigate to MessagePage on click
+                  onClick={() => handleSelectContact(contact._id )}
                 >
                   <Avatar className="h-12 w-12 rounded-full overflow-hidden">
                     {contact.image ? (

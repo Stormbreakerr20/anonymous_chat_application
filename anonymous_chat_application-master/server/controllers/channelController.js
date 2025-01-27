@@ -37,10 +37,12 @@ exports.getChannelMessages = async (req, res) => {
                 .populate('userId', 'name');
         } else {
             messages = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) })
-                .populate('userId', 'name');
+                .populate('userId', 'firstName lastName');
         }
+        // console.log(messages);
         // const messages = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) })
         //     .populate('userId', 'name');
+        // console.log(messages);
         res.status(200).json({ success: true, isConfession, messages });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -86,6 +88,7 @@ exports.postMessage = async (req, res) => {
         }
         // For other channels, use the regular Message schema
         const newMessage = await Message.create({ channelId, userId, content,imageUrl });
+        // console.log(newMessage.userId._id);
         res.status(201).json({ success: true, message: newMessage });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
