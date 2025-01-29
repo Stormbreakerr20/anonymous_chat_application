@@ -141,8 +141,9 @@ io.on('connection',async(socket)=>{
     socket.on('sidebar',async(currentUserId)=>{
         console.log("current user",currentUserId)
 
-        const conversation = await getConversation(currentUserId)
-
+        const conversation = await getConversation(currentUserId.userId)
+        
+        //console.log(conversation)
         socket.emit('conversation',conversation)
         
     })
@@ -176,7 +177,9 @@ io.on('connection',async(socket)=>{
         io.emit('receiveMessage', message);
 });
 
-
+    socket.on('channelToDm',(myId,userId)=>{
+        io.to(myId).emit('channelToDM',userId);
+    })
     // Real-time channel updates
     socket.on('newChannel', (channel) => {
         io.emit('channelCreated', channel);
@@ -184,6 +187,8 @@ io.on('connection',async(socket)=>{
     //disconnect
     socket.on('disconnect',()=>{
         onlineUser.delete(user?._id?.toString())
+        io.emit('onlineUser',Array.from(onlineUser))
+        console.log(onlineUser);
         console.log('disconnect user ',socket.id)
     })
 })
