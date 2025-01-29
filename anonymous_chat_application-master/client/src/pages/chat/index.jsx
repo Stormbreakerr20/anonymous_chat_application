@@ -5,7 +5,11 @@ import { toast } from "sonner";
 import ContactsContainer from "./components/contacts-container";
 import EmptyChatContainer from "./components/empty-chat-container";
 import io from "socket.io-client";
+<<<<<<< HEAD
 import socket from "../../socket";
+=======
+
+>>>>>>> 8d91393cb22001982699109dad253017b29a8384
 const Chat = () => {
   const { userInfo } = useAppStore();
   const navigate = useNavigate();
@@ -32,6 +36,7 @@ const Chat = () => {
       .then((data) => setChannels(data.channels || []))
       .catch((err) => console.error("Error fetching channels:", err));
 
+<<<<<<< HEAD
     socket.emit("sidebar", { userId: userInfo.id });
 
     // Listen for the response with conversation data
@@ -55,6 +60,13 @@ const Chat = () => {
       //   .then((data) => setDms(data.dms || []))
       //   .catch((err) => console.error("Error fetching DMs:", err));
     });
+=======
+    // Fetch DMs (Replace the endpoint with your actual DMs endpoint)
+    // fetch("http://localhost:3000/api/dms/")
+    //   .then((res) => res.json())
+    //   .then((data) => setDms(data.dms || []))
+    //   .catch((err) => console.error("Error fetching DMs:", err));
+>>>>>>> 8d91393cb22001982699109dad253017b29a8384
   }, []);
 
 

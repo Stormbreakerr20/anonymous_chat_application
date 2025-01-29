@@ -2,8 +2,11 @@ import React, { useEffect, useState } from "react";
 import { PiUserCircle } from "react-icons/pi";
 import { useAppStore } from "@/store";
 import socket from "../../../../../../socket";
+<<<<<<< HEAD
 import { Link, useParams } from 'react-router-dom'
 import { FaAngleLeft } from "react-icons/fa6";
+=======
+>>>>>>> 8d91393cb22001982699109dad253017b29a8384
 
 const Avatar = ({ userId, name, imageUrl, width, height, handleOnline }) => {
   const onlineUsers = useAppStore((state) => state.onlineUser);
@@ -44,9 +47,12 @@ const Avatar = ({ userId, name, imageUrl, width, height, handleOnline }) => {
       style={{ width: width + "px", height: height + "px" }}
     >
       {/* Avatar */}
+<<<<<<< HEAD
       {/* <Link to="/" className="lg:hidden">
         <FaAngleLeft size={25} />
       </Link> */}
+=======
+>>>>>>> 8d91393cb22001982699109dad253017b29a8384
       <div className="relative">
         {imageUrl ? (
           <img

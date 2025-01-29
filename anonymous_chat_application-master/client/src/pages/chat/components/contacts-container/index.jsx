@@ -94,7 +94,11 @@ const ContactsContainer = ({ dms, channels, onSelect }) => {
                 <div
                   key={dm._id}
                   className="p-2 bg-[#3a3b47] hover:bg-[#4a4b57] rounded cursor-pointer"
+<<<<<<< HEAD
                   onClick={() => onSelect("dm", dm.id)}
+=======
+                  onClick={() => onSelect("dm", dm._id)}
+>>>>>>> 8d91393cb22001982699109dad253017b29a8384
                 >
                   <div className="font-bold text-white">{dm.name}</div>
                   <div className="text-sm text-gray-400">DM</div>

@@ -16,7 +16,10 @@ import { IoMdSend } from "react-icons/io";
 import moment from 'moment'
 
 const MessagePage = (userId) => {
+<<<<<<< HEAD
   
+=======
+>>>>>>> 8d91393cb22001982699109dad253017b29a8384
   const params = userId
   // console.log(params);
   const onlineUsers =useAppStore((state) => state.onlineUser);
