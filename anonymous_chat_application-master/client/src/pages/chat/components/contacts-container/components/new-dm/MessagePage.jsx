@@ -14,6 +14,7 @@ import Loading from './Loading';
 import { useAppStore } from '@/store';
 import { IoMdSend } from "react-icons/io";
 import moment from 'moment'
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const MessagePage = (userId) => {
   const params = userId
@@ -61,6 +62,7 @@ const MessagePage = (userId) => {
   }
 
   const handleUploadImage = async(e)=>{
+    // console.log("hello");
     const file = e.target.files[0]
 
     setLoading(true)
@@ -68,6 +70,7 @@ const MessagePage = (userId) => {
     setLoading(false)
     setOpenImageVideoUpload(false)
 
+    
     setMessage(preve => {
       return{
         ...preve,
@@ -84,29 +87,29 @@ const MessagePage = (userId) => {
     })
   }
 
-  const handleUploadVideo = async(e)=>{
-    const file = e.target.files[0]
+  // const handleUploadVideo = async(e)=>{
+  //   const file = e.target.files[0]
 
-    setLoading(true)
-    const uploadPhoto = await uploadFile(file)
-    setLoading(false)
-    setOpenImageVideoUpload(false)
+  //   setLoading(true)
+  //   const uploadPhoto = await uploadFile(file)
+  //   setLoading(false)
+  //   setOpenImageVideoUpload(false)
 
-    setMessage(preve => {
-      return{
-        ...preve,
-        videoUrl : uploadPhoto.url
-      }
-    })
-  }
-  const handleClearUploadVideo = ()=>{
-    setMessage(preve => {
-      return{
-        ...preve,
-        videoUrl : ""
-      }
-    })
-  }
+  //   setMessage(preve => {
+  //     return{
+  //       ...preve,
+  //       videoUrl : uploadPhoto.url
+  //     }
+  //   })
+  // }
+  // const handleClearUploadVideo = ()=>{
+  //   setMessage(preve => {
+  //     return{
+  //       ...preve,
+  //       videoUrl : ""
+  //     }
+  //   })
+  // }
 
   useEffect(()=>{
       if(socketConnection){
@@ -150,6 +153,7 @@ const MessagePage = (userId) => {
     e.preventDefault()
 
     if(message.text || message.imageUrl || message.videoUrl){
+      
       if(socketConnection){
         socketConnection.emit('new message',{
           sender : user?.id,
@@ -202,7 +206,7 @@ const MessagePage = (userId) => {
           }`}
         >
           <div
-            className={`max-w-[70%] p-3 rounded-lg ${
+            className={`max-w-[70%] p-1 rounded-lg ${
               user.id === msg?.msgByUserId
                 ? "bg-purple-500 text-white"
                 : "bg-[#2a2b36]"
@@ -210,18 +214,18 @@ const MessagePage = (userId) => {
           >
             {msg.imageUrl && (
               <img
-                src={msg.imageUrl}
-                alt="attachment"
-                className="w-full rounded-md mb-2"
-              />
+              src={msg.imageUrl}
+              alt="attachment"
+              className="w-80 h-75 object-cover rounded-md mb-2"
+            />
             )}
-            {msg.videoUrl && (
+            {/* {msg.videoUrl && (
               <video
                 src={msg.videoUrl}
                 controls
                 className="w-full rounded-md mb-2"
               />
-            )}
+            )} */}
             <p>{msg.text}</p>
             <span className="text-xs text-gray-400 block text-right mt-1">
               {moment(msg.createdAt).format("h:mm A")}
@@ -231,27 +235,29 @@ const MessagePage = (userId) => {
       ))}
       <div ref={currentMessage} />
     </div>
+{/* Upload Preview */}
+{/* Upload Preview */}
+{/* Upload Preview */}
+{/* Upload Preview */}
+{message.imageUrl && (
+  <div className="fixed bottom-24 left-[21%] flex justify-start items-center w-full">
+    <div className="relative bg-purple-900 p-1 rounded-lg shadow-md max-w-lg">
+      <button
+        onClick={handleClearUploadImage}
+        className="absolute top-2 right-2 text-red-500"
+      >
+        <IoClose size={20} />
+      </button>
+      <img
+        src={message.imageUrl}
+        alt="Uploaded Preview"
+        className="w-full rounded-md object-contain"
+      />
+    </div>
+  </div>
+)}
 
-    {/* Upload Preview */}
-    {message.imageUrl && (
-      <div className="fixed bottom-24 left-0 right-0 flex justify-center items-center">
-        <div className="relative bg-white p-4 rounded-lg shadow-md max-w-lg">
-          <button
-            onClick={handleClearUploadImage}
-            className="absolute top-2 right-2 text-red-500"
-          >
-            <IoClose size={20} />
-          </button>
-          <img
-            src={message.imageUrl}
-            alt="Uploaded Preview"
-            className="w-full rounded-md object-contain"
-          />
-        </div>
-      </div>
-    )}
-
-    {message.videoUrl && (
+    {/* {message.videoUrl && (
       <div className="fixed bottom-24 left-0 right-0 flex justify-center items-center">
         <div className="relative bg-white p-4 rounded-lg shadow-md max-w-lg">
           <button
@@ -267,17 +273,21 @@ const MessagePage = (userId) => {
           />
         </div>
       </div>
-    )}
+    )} */}
   </section>
 
   <section className="h-20 bg-[#262831] flex items-center px-4">
     <div className="relative">
       <button
-        onClick={handleUploadImageVideoOpen}
-        className="p-3 bg-purple-500 rounded-full hover:bg-purple-600"
-      >
-        <FaPlus />
-      </button>
+      onClick={handleUploadImageVideoOpen}
+      className="p-3 bg-purple-500 rounded-full hover:bg-purple-600">
+  {loading ? (
+    <AiOutlineLoading3Quarters className="animate-spin text-white" size={20} />
+  ) : (
+    <FaPlus />
+  )}
+</button>
+
       {openImageVideoUpload && (
         <div className="absolute bottom-14 left-0 bg-white rounded-lg shadow-md">
           <form className="p-3">
@@ -286,7 +296,7 @@ const MessagePage = (userId) => {
               className="flex items-center gap-2 p-2 hover:bg-gray-200 cursor-pointer rounded-md"
             >
               <FaImage className="text-purple-500" />
-              <span>Upload Image</span>
+              <span className="text-[#1c1d25]">Upload Image</span>
             </label>
             <input
               type="file"
@@ -294,7 +304,7 @@ const MessagePage = (userId) => {
               onChange={handleUploadImage}
               className="hidden"
             />
-            <label
+            {/* <label
               htmlFor="uploadVideo"
               className="flex items-center gap-2 p-2 hover:bg-gray-200 cursor-pointer rounded-md"
             >
@@ -306,7 +316,7 @@ const MessagePage = (userId) => {
               id="uploadVideo"
               onChange={handleUploadVideo}
               className="hidden"
-            />
+            /> */}
           </form>
         </div>
       )}
