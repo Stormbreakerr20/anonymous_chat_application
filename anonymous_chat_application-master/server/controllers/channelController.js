@@ -95,6 +95,40 @@ exports.postMessage = async (req, res) => {
     }
 };
 
+exports.deleteMessage = async (req, res) => {
+    const { channelId, messageId } = req.params;
+    const { userId } = req.body;
+
+    try {
+        // Check if channel exists
+        const channel = await Channel.findById(channelId);
+        if (!channel) {
+            return res.status(404).json({ success: false, message: "Channel not found" });
+        }
+
+        // Determine message model based on channel
+        const MessageModel = channel.name === 'Confessions' ? ConfessionMessage : Message;
+
+        // Find the message
+        const message = await MessageModel.findById(messageId);
+        if (!message) {
+            return res.status(404).json({ success: false, message: "Message not found" });
+        }
+
+        // Verify user owns the message
+        if (message.userId.toString() !== userId) {
+            return res.status(403).json({ success: false, message: "Unauthorized to delete this message" });
+        }
+
+        // Delete the message
+        await MessageModel.findByIdAndDelete(messageId);
+
+        res.status(200).json({ success: true, message: "Message deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting message:", error);
+        res.status(500).json({ success: false, message: "Error deleting message" });
+    }
+};
 
 exports.get_signature = async (req, res) => {
     try {

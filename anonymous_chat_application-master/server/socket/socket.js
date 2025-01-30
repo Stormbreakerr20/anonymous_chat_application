@@ -87,56 +87,57 @@ io.on('connection',async(socket)=>{
 
 
     //new message
-    socket.on('new message',async(data)=>{
+    socket.on('new message', async(data) => {
+        try {
+            // Find or create conversation
+            let conversation = await ConversationModel.findOne({
+                "$or": [
+                    { sender: data.sender, receiver: data.receiver },
+                    { sender: data.receiver, receiver: data.sender }
+                ]
+            });
 
-        //check conversation is available both user
-        // console.log("data",data)
-        let conversation = await ConversationModel.findOne({
-            "$or" : [
-                { sender : data?.sender, receiver : data?.receiver },
-                { sender : data?.receiver, receiver :  data?.sender}
-            ]
-        })
+            if (!conversation) {
+                conversation = await ConversationModel.create({
+                    sender: data.sender,
+                    receiver: data.receiver,
+                    messages: []
+                });
+            }
 
-        //if conversation is not available
-        if(!conversation){
-            const createConversation = await ConversationModel({
-                sender : data?.sender,
-                receiver : data?.receiver
-            })
-            conversation = await createConversation.save()
+            // Create new message with conversation reference
+            const directMessage = await DirectMessageModel.create({
+                text: data.text,
+                imageUrl: data.imageUrl,
+                videoUrl: data.videoUrl,
+                msgByUserId: data.msgByUserId,
+                conversationId: conversation._id
+            });
+
+            // Add message to conversation
+            conversation.messages.push(directMessage._id);
+            await conversation.save();
+
+            // Fetch updated conversation with populated messages
+            const updatedConversation = await ConversationModel.findById(conversation._id)
+                .populate('messages');
+
+            // Emit to both users
+            io.to(data.sender).emit('directMessage', updatedConversation.messages);
+            io.to(data.receiver).emit('directMessage', updatedConversation.messages);
+
+            // Update conversation list for both users
+            const conversationSender = await getConversation(data.sender);
+            const conversationReceiver = await getConversation(data.receiver);
+
+            io.to(data.sender).emit('conversation', conversationSender);
+            io.to(data.receiver).emit('conversation', conversationReceiver);
+
+        } catch (error) {
+            console.error('Error sending message:', error);
+            socket.emit('messageError', { error: 'Failed to send message' });
         }
-        
-        const directmessage = new DirectMessageModel({
-          text : data.text,
-          imageUrl : data.imageUrl,
-          videoUrl : data.videoUrl,
-          msgByUserId :  data?.msgByUserId,
-        })
-        const saveMessage = await directmessage.save()
-
-        const updateConversation = await ConversationModel.updateOne({ _id : conversation?._id },{
-            "$push" : { messages : saveMessage?._id }
-        })
-
-        const getConversationMessage = await ConversationModel.findOne({
-            "$or" : [
-                { sender : data?.sender, receiver : data?.receiver },
-                { sender : data?.receiver, receiver :  data?.sender}
-            ]
-        }).populate('messages').sort({ updatedAt : -1 })
-
-
-        io.to(data?.sender).emit('directmessage',getConversationMessage?.messages || [])
-        io.to(data?.receiver).emit('directmessage',getConversationMessage?.messages || [])
-
-        //send conversation
-        const conversationSender = await getConversation(data?.sender)
-        const conversationReceiver = await getConversation(data?.receiver)
-
-        io.to(data?.sender).emit('conversation',conversationSender)
-        io.to(data?.receiver).emit('conversation',conversationReceiver)
-    })
+    });
 
 
     //sidebar
@@ -182,10 +183,65 @@ io.on('connection',async(socket)=>{
     socket.on('channelToDm',(myId,userId)=>{
         io.to(myId).emit('channelToDM',userId);
     })
+    socket.on('deletion',async(msgId, channelId)=>{
+        try {
+            console.log('Message deletion request:', msgId, channelId);
+            // Broadcast deletion to all clients in the channel
+            io.emit('deleteMessage', { msgId, channelId });
+        } catch (error) {
+            console.error('Error in deletion socket event:', error);
+            socket.emit('deletionError', { error: 'Failed to delete message' });
+        }
+    })
+
     // Real-time channel updates
     socket.on('newChannel', (channel) => {
         io.emit('channelCreated', channel);
     });
+
+    socket.on('deleteDirectMessage', async ({ messageId, sender, receiver }) => {
+        try {
+            // Find the conversation first
+            const conversation = await ConversationModel.findOne({
+                "$or": [
+                    { sender: sender, receiver: receiver },
+                    { sender: receiver, sender: sender }
+                ]
+            });
+
+            if (!conversation) {
+                throw new Error('Conversation not found');
+            }
+
+            // Delete message from DirectMessage collection
+            await DirectMessageModel.findByIdAndDelete(messageId);
+            
+            // Remove message reference from conversation
+            await ConversationModel.findByIdAndUpdate(
+                conversation._id,
+                { $pull: { messages: messageId } }
+            );
+
+            // Get updated messages
+            const updatedConversation = await ConversationModel.findById(conversation._id)
+                .populate('messages');
+
+            // Emit to both users
+            io.to(sender).emit('messageDeleted', { 
+                messageId,
+                messages: updatedConversation.messages 
+            });
+            io.to(receiver).emit('messageDeleted', { 
+                messageId,
+                messages: updatedConversation.messages 
+            });
+
+        } catch (error) {
+            console.error('Error deleting message:', error);
+            socket.emit('deletionError', { error: 'Failed to delete message' });
+        }
+    });
+
     //disconnect
     socket.on('disconnect',()=>{
         onlineUser.delete(user?._id?.toString())

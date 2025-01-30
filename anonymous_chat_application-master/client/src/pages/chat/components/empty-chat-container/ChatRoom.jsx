@@ -5,10 +5,12 @@ import moment from "moment";
 import axios from "axios";
 import { useAppStore } from "@/store";
 import Avatar from "./Avatar";
+import { FaTrash } from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom'
 import { FaAngleLeft } from "react-icons/fa6";
+import { IoMdClose } from "react-icons/io"; // Add this import
 
-const ChatRoom = ({ selectedInfo}) => {
+const ChatRoom = ({ selectedInfo }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const { userInfo } = useAppStore();
@@ -18,6 +20,8 @@ const ChatRoom = ({ selectedInfo}) => {
   const channelId = selectedInfo.id;
   const channelName = selectedInfo.name;
   const [dmPrompt, setDmPrompt] = useState({ show: false, username: "", userId: null }); // DM prompt state
+  const [deletePrompt, setDeletePrompt] = useState({ show: false, messageId: null });
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     fetch(`http://localhost:3000/api/channels/${channelId}/messages`)
@@ -45,11 +49,15 @@ const ChatRoom = ({ selectedInfo}) => {
         ]);
       }
     };
-
+    const handleDelete=(msgId)=>{
+      setMessages((prevMessages) => prevMessages.filter(msg => msg._id !== msgId));
+    }
     socket.on("receiveMessage", handleReceiveMessage);
+    socket.on('deleteMessage',handleDelete);
 
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("deleteMessage", handleDelete);
     };
   }, [channelId]);
 
@@ -102,6 +110,41 @@ const ChatRoom = ({ selectedInfo}) => {
       toast.error("Failed to send message");
     }
   };
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/channels/${selectedInfo.id}/messages/${messageId}`, {
+        data: { userId: userInfo.id }
+      });
+      
+      // Emit deletion event with both message ID and channel ID
+      socket.emit('deletion', messageId, channelId);
+      setDeletePrompt({ show: false, messageId: null });
+      toast.success('Message deleted successfully');
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast.error('Failed to delete message');
+    }
+  };
+
+  useEffect(() => {
+    // ...existing socket event listeners...
+
+    const handleDelete = (data) => {
+      if (data.channelId === channelId) {
+        setMessages((prevMessages) => prevMessages.filter(msg => msg._id !== data.msgId));
+      }
+    };
+
+    socket.on('deleteMessage', handleDelete);
+    socket.on('deletionError', (error) => {
+      toast.error(error.error || 'Failed to delete message');
+    });
+
+    return () => {
+      socket.off('deleteMessage', handleDelete);
+      socket.off('deletionError');
+    };
+  }, [channelId]);
 
   // Scroll to the last message
   useEffect(() => {
@@ -121,6 +164,29 @@ const ChatRoom = ({ selectedInfo}) => {
     // toast.success(`DM sent to ${username}!`);
   };
 
+  const renderDateSeparator = (date) => (
+    <div className="flex items-center justify-center my-4">
+      <div className="bg-[#2a2b36] px-4 py-1 rounded-full text-xs text-gray-400">
+        {moment(date).calendar(null, {
+          sameDay: '[Today]',
+          lastDay: '[Yesterday]',
+          lastWeek: 'dddd',
+          sameElse: 'MMMM D, YYYY'
+        })}
+      </div>
+    </div>
+  );
+
+  const groupMessagesByDate = (messages) => {
+    const groups = {};
+    messages.forEach(msg => {
+      const date = moment(msg.createdAt).format('YYYY-MM-DD');
+      if (!groups[date]) groups[date] = [];
+      groups[date].push(msg);
+    });
+    return groups;
+  };
+
   return (
     <div className="flex flex-col h-screen w-full bg-[#1c1d25]">
       {/* Header Section */}
@@ -137,70 +203,110 @@ const ChatRoom = ({ selectedInfo}) => {
       {/* Message List */}
       <div className="flex-1 overflow-y-auto bg-[#262831] p-4 space-y-4">
         {messages.length > 0 ? (
-          messages.map((msg) => {
-            const isCurrentUser =
-              msg.userId._id === currentUserId || msg.userId === currentUserId;
-            const displayName = isCurrentUser
-              ? "You"
-              : msg.userName || "Unknown User";
+          Object.entries(groupMessagesByDate(messages)).map(([date, dateMessages]) => (
+            <div key={date}>
+              {renderDateSeparator(date)}
+              {dateMessages.map((msg) => {
+                const isCurrentUser = msg.userId._id === currentUserId || msg.userId === currentUserId;
+                const displayName = isCurrentUser ? "You" : msg.userName || "Unknown User";
 
-            return (
-              <div
-                key={msg._id}
-                className={`flex ${
-                  isCurrentUser ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`relative max-w-[70%] p-3 rounded-lg ${
-                    isCurrentUser
-                      ? "bg-purple-500 text-white"
-                      : "bg-[#2a2b36] text-white"
-                  }`}
-                >
-                  {/* Triangle for chat bubble */}
-                  <div
-                    className={`absolute top-0 w-4 h-4 ${
-                      isCurrentUser
-                        ? "-right-2 border-l-8 border-l-purple-500 border-t-8 border-t-transparent"
-                        : "-left-2 border-r-8 border-r-[#2a2b36] border-t-8 border-t-transparent"
-                    }`}
-                  />
-                  <div
-                    className="font-bold text-sm cursor-pointer hover:underline"
-                    onClick={() =>
-                      !isCurrentUser &&
-                      setDmPrompt({
-                        show: true,
-                        username: msg.userName,
-                        userId: msg.userId,
-                      })
-                    }
-                  >
-                    {displayName}
+                return (
+                  <div key={msg._id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-4`}>
+                    <div className={`relative max-w-[70%] ${isCurrentUser ? "bg-purple-500" : "bg-[#2a2b36]"} 
+                      rounded-2xl p-4 shadow-lg transform transition-all duration-200 hover:scale-[1.02]`}>
+                      <div className="font-bold text-sm text-white/90 cursor-pointer hover:underline mb-1"
+                        onClick={() => !isCurrentUser && setDmPrompt({
+                          show: true,
+                          username: msg.userName,
+                          userId: msg.userId,
+                        })}>
+                        {displayName}
+                      </div>
+                      
+                      {msg.content && (
+                        <div className="text-white/95 text-base break-words mb-2">
+                          {msg.content}
+                        </div>
+                      )}
+
+                      {msg.imageUrl && (
+                        <div className="mt-2 cursor-pointer" onClick={() => setSelectedImage(msg.imageUrl)}>
+                          <img
+                            src={msg.imageUrl}
+                            alt="Message attachment"
+                            className="rounded-lg w-64 h-64 object-cover hover:opacity-90 transition-opacity"
+                          />
+                        </div>
+                      )}
+
+                      <div className="text-xs text-white/70 text-right mt-1">
+                        {moment(msg.createdAt).format("h:mm A")}
+                      </div>
+
+                      {isCurrentUser && (
+                        <button
+                          className="absolute -top-2 -right-2 text-red-500 hover:text-red-700 bg-[#262831] rounded-full p-1"
+                          onClick={() => setDeletePrompt({ show: true, messageId: msg._id })}
+                        >
+                          <FaTrash size={12} />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="mt-1 text-base break-words">{msg.content}</div>
-                  {msg.imageUrl && (
-                    <img
-                      src={msg.imageUrl}
-                      alt="Message attachment"
-                      className="w-32 h-32 mt-2 rounded-md object-cover"
-                    />
-                  )}
-                  <div className="mt-1 text-xs text-gray-300 text-right">
-                    {moment(msg.createdAt).format("h:mm A")}
-                  </div>
-                </div>
-              </div>
-            );
-          })
+                );
+              })}
+            </div>
+          ))
         ) : (
           <div className="text-center text-gray-500">No messages yet</div>
         )}
-
-        {/* Reference to the last message */}
         <div ref={lastMessageRef} />
       </div>
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage(null)}>
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
+            onClick={() => setSelectedImage(null)}
+          >
+            <IoMdClose size={32} />
+          </button>
+          <img
+            src={selectedImage}
+            alt="Full size"
+            className="max-h-[90vh] max-w-[90vw] object-contain"
+          />
+        </div>
+      )}
+
+      {deletePrompt.show && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full mt-10">
+      <h3 className="text-lg font-bold mb-6 text-gray-800 text-center">
+        Are you sure you want to delete this message?
+      </h3>
+      <div className="flex justify-center gap-4">
+        <button
+          className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg shadow-md transition-all"
+          onClick={() => {
+            handleDeleteMessage(deletePrompt.messageId);
+            setDeletePrompt({ show: false, messageId: null });
+          }}
+        >
+          Yes, Delete
+        </button>
+        <button
+          className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg shadow-md transition-all"
+          onClick={() => setDeletePrompt({ show: false, messageId: null })}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* DM Prompt */}
       {dmPrompt.show && (
