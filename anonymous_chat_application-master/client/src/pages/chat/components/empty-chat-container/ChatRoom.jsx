@@ -5,11 +5,8 @@ import moment from "moment";
 import axios from "axios";
 import { useAppStore } from "@/store";
 import Avatar from "./Avatar";
-<<<<<<< HEAD
 import { Link, useParams } from 'react-router-dom'
 import { FaAngleLeft } from "react-icons/fa6";
-=======
->>>>>>> 8d91393cb22001982699109dad253017b29a8384
 
 const ChatRoom = ({ selectedInfo}) => {
   const [messages, setMessages] = useState([]);
@@ -119,24 +116,16 @@ const ChatRoom = ({ selectedInfo}) => {
     // You can implement actual DM functionality here
     // selectingDM(userId);
     socket.emit('channelToDm',userInfo.id,userId)
-<<<<<<< HEAD
     // console.log(userInfo.id,userId)
     setDmPrompt({ show: false, username: "", userId: null }); // Close the prompt
     // toast.success(`DM sent to ${username}!`);
-=======
-    setDmPrompt({ show: false, username: "", userId: null }); // Close the prompt
-    toast.success(`DM sent to ${username}!`);
->>>>>>> 8d91393cb22001982699109dad253017b29a8384
   };
 
   return (
     <div className="flex flex-col h-screen w-full bg-[#1c1d25]">
       {/* Header Section */}
       <div className="bg-[#2a2b36] p-4 flex items-center justify-between rounded-t-lg">
-<<<<<<< HEAD
       
-=======
->>>>>>> 8d91393cb22001982699109dad253017b29a8384
         <Avatar
           name={channelName}
           width={50}

@@ -1,11 +1,7 @@
 import React from "react";
 import { PiUserCircle } from "react-icons/pi";
-<<<<<<< HEAD
 import { Link, useParams } from 'react-router-dom'
 import { FaAngleLeft } from "react-icons/fa6";
-=======
-
->>>>>>> 8d91393cb22001982699109dad253017b29a8384
 const Avatar = ({ name, imageUrl, width, height }) => {
   let avatarName = "";
 
@@ -33,7 +29,6 @@ const Avatar = ({ name, imageUrl, width, height }) => {
 
   return (
     <div
-<<<<<<< HEAD
       className="flex items-center gap-4" // Change this to `flex` to place items horizontally
       style={{ width: "auto", height: height + "px" }}
     >
@@ -41,12 +36,6 @@ const Avatar = ({ name, imageUrl, width, height }) => {
       <Link to="/" className="lg:hidden">
               <FaAngleLeft size={25} />
             </Link>
-=======
-      className="flex items-center" // Change this to `flex` to place items horizontally
-      style={{ width: "auto", height: height + "px" }}
-    >
-      {/* Profile Image */}
->>>>>>> 8d91393cb22001982699109dad253017b29a8384
       <div
         className={`relative flex justify-center items-center overflow-hidden rounded-full`}
         style={{ width: width + "px", height: height + "px" }}
