@@ -1,12 +1,22 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
 
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
 
 .poppins-medium {
     font-family: "Poppins", serif;
@@ -81,4 +91,42 @@
   
   ::-webkit-scrollbar-thumb:hover {
     background: #555;
+  }
+
+  /* Add responsive font sizes */
+  @media (max-width: 1280px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    html {
+      font-size: 15px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html {
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    html {
+      font-size: 13px;
+    }
+  }
+
+  /* Add touch-friendly scrolling for mobile */
+  @media (hover: none) and (pointer: coarse) {
+    ::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    * {
+      -webkit-overflow-scrolling: touch;
+      @apply touch-manipulation;
+    }
   }

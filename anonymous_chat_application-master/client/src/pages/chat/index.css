@@ -1,0 +1,98 @@
+.chat-container {
+  @apply flex;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  background-color: #1c1d25;
+}
+
+.chat-sidebar {
+  @apply flex-shrink-0;
+  width: 320px; /* Fixed width instead of percentage */
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.chat-main {
+  @apply flex-1;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  min-width: 0; /* Prevent flex item from overflowing */
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .chat-container {
+    @apply relative;
+  }
+
+  .chat-sidebar {
+    width: 100%;
+    max-width: none;
+    @apply absolute inset-0 z-20;
+  }
+
+  .chat-sidebar--hidden {
+    display: none;
+  }
+
+  .chat-main {
+    @apply absolute inset-0;
+    width: 100%;
+  }
+
+  .chat-main--active {
+    @apply z-30;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-container {
+    @apply overflow-hidden;
+  }
+
+  .chat-sidebar {
+    min-width: 100%;
+  }
+
+  .message-input {
+    @apply text-sm p-2;
+  }
+
+  .upload-button, .send-button {
+    @apply w-8 h-8;
+  }
+}
+
+/* Update responsive styles */
+@media (max-width: 1280px) {
+  .chat-sidebar {
+    width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-container {
+    @apply relative;
+  }
+
+  .chat-sidebar {
+    @apply fixed inset-0 z-40;
+    width: 100%;
+  }
+
+  .chat-main {
+    @apply z-30 w-full;
+  }
+}
+
+@media (max-height: 600px) {
+  .chat-container {
+    @apply h-screen;
+  }
+
+  .input-section {
+    @apply h-16;
+  }
+}

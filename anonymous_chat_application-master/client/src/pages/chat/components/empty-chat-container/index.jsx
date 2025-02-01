@@ -2,6 +2,8 @@ import Lottie from "react-lottie";
 import { animationDefaultOptions } from "@/lib/utils";
 import ChatRoom from "./ChatRoom";
 import DMRoom from "../contacts-container/components/new-dm/MessagePage";
+import Confessions from "./Confessions";
+import './index.css';
 
 const EmptyChatContainer = ({ selectedInfo }) => {
   console.log(selectedInfo);
@@ -23,28 +25,41 @@ const EmptyChatContainer = ({ selectedInfo }) => {
   // }, []);
   if (!selectedInfo || !selectedInfo.type) {
     return (
-      <div className="flex-1 flex flex-col justify-center items-center bg-[#1c1d25]">
-        <Lottie
-          isClickToPauseDisabled={true}
-          height={200}
-          width={200}
-          options={animationDefaultOptions}
-        />
-        <h3 className="text-white text-3xl mt-4">
-          Welcome to <span className="text-purple-500">Shadow</span> Talk!
+      <div className="empty-container">
+        <div className="welcome-animation">
+          <Lottie
+            isClickToPauseDisabled={true}
+            height={200}
+            width={200}
+            options={animationDefaultOptions}
+          />
+        </div>
+        <h3 className="welcome-text">
+          Welcome to <span className="welcome-highlight">Shadow</span> Talk!
         </h3>
       </div>
     );
   }
 
-switch (selectedInfo.type) {
-    case "channel":
-      return <ChatRoom selectedInfo={selectedInfo} />;
-    case "dm":
-      return <DMRoom userId={selectedInfo.id} />;
-    default:
-      return <div className="text-white">Invalid Selection</div>;
-  }
+  const renderContent = () => {
+    switch (selectedInfo.type) {
+      case "channel":
+        if (selectedInfo.name === "Confessions") {
+          return <Confessions selectedInfo={selectedInfo} />;
+        }
+        return <ChatRoom selectedInfo={selectedInfo} />;
+      case "dm":
+        return <DMRoom userId={selectedInfo.id} />;
+      default:
+        return <div className="text-white">Invalid Selection</div>;
+    }
+  };
+
+  return (
+    <div className="content-container">
+      {renderContent()}
+    </div>
+  );
 };
 
 export default EmptyChatContainer;

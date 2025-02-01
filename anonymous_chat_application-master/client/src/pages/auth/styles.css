@@ -1,0 +1,324 @@
+.auth-wrapper {
+  @apply fixed top-0 left-0 right-0 bottom-0 
+         flex items-center justify-center 
+         w-screen h-screen 
+         overflow-hidden 
+         bg-white
+         p-4;
+}
+
+.auth-container {
+  @apply relative
+         w-full max-w-[1200px]
+         h-[90vh] max-h-[800px]
+         bg-white 
+         rounded-3xl 
+         shadow-2xl 
+         grid xl:grid-cols-2
+         overflow-hidden;
+}
+
+.form-container {
+  @apply w-full h-full
+         flex flex-col 
+         gap-4
+         p-6 
+         overflow-y-auto;
+}
+
+.welcome-section {
+  @apply flex items-center justify-center flex-col;
+}
+
+.welcome-header {
+  @apply flex items-center justify-center;
+}
+
+.welcome-title {
+  @apply text-5xl font-bold md:text-6xl;
+}
+
+.welcome-emoji {
+  @apply h-[100px];
+}
+
+.welcome-subtitle {
+  @apply font-medium text-center;
+}
+
+.tabs-wrapper {
+  @apply w-full max-w-[400px]
+         flex flex-col
+         overflow-hidden
+         mx-auto;
+}
+
+.tabs-list {
+  @apply sticky top-0 
+         bg-white 
+         z-10
+         w-full flex;
+}
+
+.tab-trigger {
+  @apply data-[state=active]:bg-transparent 
+         text-black text-opacity-90 
+         border-b-2
+         rounded-none w-full 
+         data-[state=active]:text-black 
+         data-[state=active]:font-semibold 
+         data-[state=active]:border-b-purple-500 
+         p-3 transition-all duration-300;
+}
+
+.name-input-container {
+  @apply relative flex items-center w-full;
+}
+
+.anonymous-id-input {
+  @apply rounded-full p-6 pr-12;
+  padding-right: 3rem !important;
+}
+
+.anonymous-id-hint {
+  @apply text-sm text-gray-500 italic ml-4;
+}
+
+.auth-input {
+  @apply rounded-full p-4 md:p-6 w-full;
+}
+
+.dice-button {
+  @apply p-2 
+         rounded-full hover:bg-gray-100 
+         transition-colors cursor-pointer
+         flex items-center justify-center;
+}
+
+.name-hint {
+  @apply flex items-center gap-1 ml-4 mt-1;
+}
+
+.submit-button {
+  @apply rounded-full p-4 md:p-6 
+         bg-black text-white
+         w-full
+         mt-2;
+}
+
+.background-image {
+  @apply hidden xl:flex 
+         items-center justify-center
+         h-full
+         p-6
+         overflow-hidden;
+}
+
+.background-img {
+  @apply max-h-full w-auto
+         object-contain
+         select-none;
+}
+
+body {
+  @apply overflow-hidden;
+}
+
+* {
+  @apply box-border;
+}
+
+/* Add at the end of file */
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+.overflow-container {
+  @apply overflow-y-auto overflow-x-hidden;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tooltip-content {
+  @apply bg-[#1c1b1e] text-white p-2 
+         rounded-lg text-sm max-w-[200px];
+}
+
+.input-group {
+  @apply bg-white p-6 rounded-2xl shadow-md w-full flex items-center gap-2;
+}
+
+.input-group1 {
+  @apply bg-white p-6 rounded-2xl shadow-md w-full relative;
+  display: flex;
+  flex-direction:row;
+  /* align-items: center; */
+  /* gap: 0.5rem; */
+}
+
+.input-container-with-icon {
+  @apply flex items-center w-full;
+}
+
+.icon-wrapper {
+  @apply absolute right-8 top-1/2 -translate-y-1/2 
+         flex items-center gap-2 z-10;
+}
+
+.icon-button {
+  @apply p-2 rounded-full hover:bg-gray-100/50
+         transition-colors cursor-pointer
+         flex items-center justify-center;
+}
+
+.name-input-container {
+  @apply relative flex items-center w-full;
+}
+
+.input-actions {
+  @apply absolute right-4 top-1/2 -translate-y-1/2 
+         flex items-center gap-2 z-10;
+  margin-left: auto; /* Push to the right */
+}
+
+.dice-button {
+  @apply p-2 rounded-full hover:bg-gray-100 
+         transition-colors cursor-pointer
+         flex items-center justify-center;
+}
+
+.auth-button-container {
+  @apply bg-white p-6 rounded-2xl shadow-md w-full mt-2;
+}
+
+/* Add these responsive styles at the end */
+@media (max-width: 1280px) {
+  .auth-container {
+    @apply w-[90%] max-w-[1000px] h-[90vh];
+  }
+}
+
+@media (max-width: 1024px) {
+  .auth-container {
+    @apply w-[95%] h-[95vh];
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    @apply w-full h-screen rounded-none shadow-none;
+  }
+
+  .form-container {
+    @apply p-4;
+  }
+
+  .welcome-title {
+    @apply text-3xl;
+  }
+
+  .welcome-emoji {
+    @apply h-16;
+  }
+
+  .auth-input, .submit-button {
+    @apply p-3;
+  }
+
+  .anonymous-id-input {
+    @apply p-4 pr-10;
+  }
+
+  .dice-button {
+    @apply right-2 p-1.5;
+  }
+
+  .dice-icon {
+    @apply text-base;
+  }
+
+  .name-hint {
+    @apply ml-2 text-xs;
+  }
+
+  .input-group {
+    @apply p-4 gap-1;
+  }
+
+  .input-group1 {
+    @apply p-4;
+    gap: 0.25rem;
+  }
+
+  .input-actions {
+    @apply right-3 gap-1;
+  }
+
+  .auth-button-container {
+    @apply p-4;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    @apply p-3 gap-3;
+  }
+
+  .welcome-section {
+    @apply mb-4;
+  }
+
+  .tabs-wrapper {
+    @apply w-full;
+  }
+
+  .auth-input, .submit-button {
+    @apply p-2 text-sm;
+  }
+
+  .anonymous-id-input {
+    @apply p-3 pr-8;
+  }
+
+  .dice-button {
+    @apply right-1 p-1;
+  }
+
+  .dice-icon {
+    @apply text-sm;
+  }
+
+  .name-hint {
+    @apply ml-1;
+  }
+
+  .input-group {
+    @apply p-3 gap-1;
+  }
+
+  .input-group1 {
+    @apply p-3;
+    gap: 0.25rem;
+  }
+
+  .input-actions {
+    @apply right-2 gap-1;
+  }
+
+  .auth-button-container {
+    @apply p-3;
+  }
+}
+
+@media (max-height: 700px) {
+  .auth-container {
+    @apply h-[98vh] py-2;
+  }
+
+  .form-container {
+    @apply gap-2;
+  }
+}

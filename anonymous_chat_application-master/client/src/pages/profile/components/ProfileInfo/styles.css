@@ -1,0 +1,11 @@
+/* ...existing code... */
+
+.profile-avatar {
+  @apply relative w-24 h-24 rounded-full overflow-hidden bg-gray-200;
+}
+
+.avatar-image {
+  @apply w-full h-full object-cover;
+}
+
+/* ...existing code... */

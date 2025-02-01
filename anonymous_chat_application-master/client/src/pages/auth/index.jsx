@@ -9,9 +9,9 @@ import {apiClient} from '@/lib/api-client.js';
 import { LOGIN_ROUTE, SIGNUP_ROUTE } from '@/utils/constants';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store';
-
-
-
+import { FaDice } from 'react-icons/fa';
+import { IoInformationCircleOutline } from 'react-icons/io5';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Auth = () => {
   // State variables
@@ -19,11 +19,10 @@ const Auth = () => {
   const { setUserInfo } = useAppStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmpassword, setConfirmPassword] = useState('');
 
   const validateLogin = () => {
     if(!email.length){
-      toast.error("Email is required");
+      toast.error("Anonymous Id is required");
       return false;
     }
     if(!password.length){
@@ -35,16 +34,13 @@ const Auth = () => {
 
   const validateSignup = () => {
     if(!email.length){
-      toast.error("Email is required");
+      toast.error("Anonymous Id is required");
       return false;
     }
     if(!password.length){
       toast.error("Password is required");
       return false;
     }
-    if(password !== confirmpassword){
-      toast.error("Passwords do not match");
-      return false;}
     return true;
   }
   
@@ -84,11 +80,20 @@ const handleSignup = async () => {
     }
 };
 
-
+const generateRandomId = async () => {
+  try {
+    const response = await apiClient.get('/api/auth/generate-name');
+    if (response.data?.name) {
+      setEmail(response.data.name);
+    }
+  } catch (error) {
+    toast.error("Failed to generate anonymous id");
+  }
+};
 
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">
-      <div className="h-[80vh] items-center justify-center bg-white border-2 border-white text-opacity-90 shadow-2xl w-[80vw] md:w-[90vw] lg:w-[70vw] xl:w-[60vw] rounded-3xl grid xl:grid-cols-2">
+      <div className="h-[80vh] items-center justify-center bg-gray-50 border-2 border-white text-opacity-90 shadow-2xl w-[80vw] md:w-[90vw] lg:w-[70vw] xl:w-[60vw] rounded-3xl grid xl:grid-cols-2">
         <div className="flex flex-col gap-10 items-center justify-center">
           <div className="flex items-center justify-center flex-col">
             <div className="flex items-center justify-center">
@@ -106,47 +111,60 @@ const handleSignup = async () => {
                 rounded-none w-full data-[state=active]:text-black data-[state=active]:font-semibold data-[state=active]:border-b-purple-500 p-3 transition-all duration-300'>Signup</TabsTrigger>
               </TabsList>
               <TabsContent className='flex flex-col gap-5 mt-10' value='login'>
-              
-                <Input 
-                  placeholder="Email" 
-                  className="rounded-full p-6" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                />
-                <Input 
-                  placeholder="Password" 
-                  type="password"
-                  className="rounded-full p-6" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                />
-              <Button className="rounded-full p-6 bg-black text-white " onClick={handleLogin}>Login</Button>
+                <div className="input-group">
+                  <div className="name-input-container">
+                    <Input 
+                      placeholder="Anonymous Id" 
+                      className="rounded-full p-6 flex-1" 
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value)} 
+                    />
+                  </div>
+                </div>
+                <div className="input-group">
+                  <div className="name-input-container">
+                    <Input 
+                      placeholder="Password" 
+                      type="password"
+                      className="rounded-full p-6 flex-1" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)} 
+                    />
+                  </div>
+                </div>
+                <Button className="rounded-full p-6 bg-black text-white" onClick={handleLogin}>Login</Button>
               </TabsContent>
-              <TabsContent className='flex flex-col gap-5 ' value='signup'>
-                <Input 
-                  placeholder="Email" 
-                  className="rounded-full p-6" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                />
-                <Input 
-                  placeholder="Password" 
-                  type="password"
-                  className="rounded-full p-6" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                />
-                <Input 
-                  placeholder="Confirm Password" 
-                  type="password"
-                  className="rounded-full p-6" 
-                  value={confirmpassword} 
-                  onChange={(e) => setConfirmPassword(e.target.value)} 
-                />
-              <Button className="rounded-full p-6 bg-black text-white" onClick={handleSignup}>Sign Up</Button>
+              <TabsContent className='flex flex-col gap-5' value='signup'>
+                <div className="input-group1">
+                  <div className="input-container-with-icon">
+                    <Input 
+                      placeholder="Anonymous Id" 
+                      className="rounded-full p-6 pr-16 w-full" 
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value)} 
+                    />
+                    <div className="icon-wrapper">
+                      <button onClick={generateRandomId} className="icon-button">
+                        <FaDice size={18} className="text-purple-500" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="input-group">
+                  <Input 
+                    placeholder="Password" 
+                    type="password"
+                    className="rounded-full p-6" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                  />
+                </div>
+                <div className="auth-button-container">
+                  <Button className="rounded-full p-6 bg-black text-white w-full" onClick={handleSignup}>
+                    Sign Up
+                  </Button>
+                </div>
               </TabsContent>
-
-            
             </Tabs>
           </div>
         </div>

@@ -1,6 +1,7 @@
 const User = require("../models/UserModel.js");
 const {sign} = require('jsonwebtoken');
 const {renameSync , unlinkSync} = require("fs");
+const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (email, userId) => {
@@ -16,12 +17,12 @@ exports.signup = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required" });
+            return res.status(400).json({ message: "Anonymous Id and password are required" });
         }
         
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: "Email already exists" });
+            return res.status(400).json({ message: "Anonymous Id already exists" });
         }
 
         const user = await User.create({ 
@@ -56,7 +57,7 @@ exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         if(!email || !password) {
-            return res.status(400).json({ message: "Email and password are required" });
+            return res.status(400).json({ message: "Anonymous Id and password are required" });
         }
         const user = await User.findOne({ email });
         if(!user) {
@@ -64,7 +65,7 @@ exports.login = async (req, res, next) => {
         }
         const isMatch = await user.comparePassword(password);
         if(!isMatch) {
-            return res.status(401).json({ message: "Invalid email or password" });
+            return res.status(401).json({ message: "Invalid Anonymous Id or password" });
         }
 
         const token = createToken(user.email, user._id);
@@ -228,3 +229,29 @@ exports.logout = async (req, res, next) => {
         return res.status(500).send("Internal server error");
     }
 }
+
+exports.generateName = async (req, res) => {
+  try {
+    let isUnique = false;
+    let randomName;
+    
+    while (!isUnique) {
+      randomName = uniqueNamesGenerator({
+        dictionaries: [adjectives, colors, animals],
+        length: 2,
+        separator: '',
+        style: 'capital'
+      });
+      
+      // Check if name exists
+      const existingUser = await User.findOne({ firstName: randomName });
+      if (!existingUser) {
+        isUnique = true;
+      }
+    }
+    
+    res.json({ name: randomName });
+  } catch (error) {
+    res.status(500).json({ message: "Error generating name" });
+  }
+};

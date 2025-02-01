@@ -9,8 +9,16 @@ import { FaTrash } from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom'
 import { FaAngleLeft } from "react-icons/fa6";
 import { IoMdClose } from "react-icons/io"; // Add this import
+import { FaPlus } from "react-icons/fa6";
+import { IoMdSend } from "react-icons/io";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import './ChatRoom.css';
 
 const ChatRoom = ({ selectedInfo }) => {
+  // Add loading state
+  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const { userInfo } = useAppStore();
@@ -63,10 +71,14 @@ const ChatRoom = ({ selectedInfo }) => {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() && !image) return;
+    if (isSubmitting) return; // Prevent multiple submissions
 
     try {
+      setIsSubmitting(true); // Lock submission
       let imageUrl = null;
+
       if (image) {
+        setLoading(true); // Set loading to true when upload starts
         const { data: { signature, timestamp, cloudName, apiKey } } = await axios.post("http://localhost:3000/api/cloudinary/get-signature");
 
         const formData = new FormData();
@@ -83,6 +95,7 @@ const ChatRoom = ({ selectedInfo }) => {
         imageUrl = uploadResponse.data.secure_url;
         toast.success("Image uploaded successfully!");
         setImage(null);
+        setLoading(false); // Set loading to false after upload completes
       }
 
       const message = {
@@ -102,14 +115,22 @@ const ChatRoom = ({ selectedInfo }) => {
       );
 
       const data = await response.json();
-      socket.emit("newMessage", data.message);
-      setNewMessage("");
-      setImage(null);
+      
+      // Only emit the message once
+      if (response.ok) {
+        socket.emit("newMessage", data.message);
+        setNewMessage("");
+        setImage(null);
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("Failed to send message");
+    } finally {
+      setLoading(false);
+      setIsSubmitting(false); // Unlock submission
     }
   };
+
   const handleDeleteMessage = async (messageId) => {
     try {
       await axios.delete(`http://localhost:3000/api/channels/${selectedInfo.id}/messages/${messageId}`, {
@@ -187,11 +208,19 @@ const ChatRoom = ({ selectedInfo }) => {
     return groups;
   };
 
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (!isSubmitting) {
+      handleSendMessage();
+    }
+  };
+
   return (
-    <div className="flex flex-col h-screen w-full bg-[#1c1d25]">
-      {/* Header Section */}
-      <div className="bg-[#2a2b36] p-4 flex items-center justify-between rounded-t-lg">
-      
+    <div className="chatroom-container">
+      <div className="chatroom-header">
+        <Link to="/" className="back-button">
+          <FaAngleLeft size={25} />
+        </Link>
         <Avatar
           name={channelName}
           width={50}
@@ -200,32 +229,51 @@ const ChatRoom = ({ selectedInfo }) => {
         />
       </div>
 
-      {/* Message List */}
-      <div className="flex-1 overflow-y-auto bg-[#262831] p-4 space-y-4">
+      {/* Message List - Updated message bubble styling */}
+      <div className="messages-container">
         {messages.length > 0 ? (
           Object.entries(groupMessagesByDate(messages)).map(([date, dateMessages]) => (
             <div key={date}>
-              {renderDateSeparator(date)}
+              <div className="date-separator">
+                <div className="date-label">
+                  {moment(date).calendar(null, {
+                    sameDay: '[Today]',
+                    lastDay: '[Yesterday]',
+                    lastWeek: 'dddd',
+                    sameElse: 'MMMM D, YYYY'
+                  })}
+                </div>
+              </div>
               {dateMessages.map((msg) => {
                 const isCurrentUser = msg.userId._id === currentUserId || msg.userId === currentUserId;
                 const displayName = isCurrentUser ? "You" : msg.userName || "Unknown User";
 
                 return (
                   <div key={msg._id} className={`flex ${isCurrentUser ? "justify-end" : "justify-start"} mb-4`}>
-                    <div className={`relative max-w-[70%] ${isCurrentUser ? "bg-purple-500" : "bg-[#2a2b36]"} 
-                      rounded-2xl p-4 shadow-lg transform transition-all duration-200 hover:scale-[1.02]`}>
+                    <div className={`relative max-w-[70%] w-fit ${isCurrentUser ? "bg-purple-500" : "bg-[#2a2b36]"} 
+                      rounded-2xl p-4 shadow-lg transform transition-all duration-200 hover:scale-[1.02]`}
+                    >
                       <div className="font-bold text-sm text-white/90 cursor-pointer hover:underline mb-1"
                         onClick={() => !isCurrentUser && setDmPrompt({
                           show: true,
                           username: msg.userName,
                           userId: msg.userId,
-                        })}>
+                        })}
+                      >
                         {displayName}
                       </div>
                       
                       {msg.content && (
-                        <div className="text-white/95 text-base break-words mb-2">
-                          {msg.content}
+                        <div className="text-white/95 text-base break-words mb-2 w-full">
+                          <p style={{ 
+                            overflowWrap: 'break-word', 
+                            wordBreak: 'break-word',
+                            whiteSpace: 'pre-wrap',
+                            maxWidth: '100%',
+                            hyphens: 'auto'
+                          }}>
+                            {msg.content}
+                          </p>
                         </div>
                       )}
 
@@ -334,35 +382,59 @@ const ChatRoom = ({ selectedInfo }) => {
 
       )}
 
+      {/* Upload Preview */}
+      {image && (
+        <div className="fixed bottom-24 left-[21%] flex justify-start items-center w-full">
+          <div className="relative bg-purple-900 p-1 rounded-lg shadow-md max-w-lg">
+            <button
+              onClick={() => setImage(null)}
+              className="absolute top-2 right-2 text-red-500"
+            >
+              <IoMdClose size={20} />
+            </button>
+            <img
+              src={URL.createObjectURL(image)}
+              alt="Upload Preview"
+              className="w-full rounded-md object-contain"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Input Section */}
-      <div className="bg-[#2a2b36] p-4 flex items-center gap-3 rounded-b-lg">
-        <input
-          className="flex-1 p-3 bg-[#33343f] text-white rounded-lg outline-none placeholder-gray-400"
-          placeholder="Type your message..."
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              handleSendMessage();
-            }
-          }}
-        />
-        <label className="bg-blue-500 text-white p-2 rounded cursor-pointer">
-          Upload Image
+      <div className="h-20 bg-[#262831] flex items-center px-4">
+        <div className="relative">
+          <label className="inline-flex items-center justify-center w-10 h-10 bg-purple-500 rounded-full hover:bg-purple-600 cursor-pointer transition-colors">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => !isSubmitting && setImage(e.target.files[0])}
+              disabled={isSubmitting}
+            />
+            {loading ? (
+              <AiOutlineLoading3Quarters className="animate-spin text-white" size={20} />
+            ) : (
+              <FaPlus className="text-white" size={16} />
+            )}
+          </label>
+        </div>
+        <form className="flex-1 flex items-center ml-4" onSubmit={handleFormSubmit}>
           <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => setImage(e.target.files[0])}
+            type="text"
+            placeholder="Type your message..."
+            className="w-full p-3 rounded-lg bg-[#2a2b36] text-white outline-none"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            disabled={isSubmitting}
           />
-        </label>
-        {image && <span className="text-white">{image.name}</span>}
-        <button
-          className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-all"
-          onClick={handleSendMessage}
-        >
-          Send
-        </button>
+          <button 
+            className="ml-2 text-purple-500 hover:text-purple-600"
+            disabled={isSubmitting}
+          >
+            <IoMdSend size={25} />
+          </button>
+        </form>
       </div>
     </div>
   );

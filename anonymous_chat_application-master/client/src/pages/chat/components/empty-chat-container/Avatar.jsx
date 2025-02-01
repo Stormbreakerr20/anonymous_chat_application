@@ -1,7 +1,7 @@
 import React from "react";
 import { PiUserCircle } from "react-icons/pi";
-import { Link, useParams } from 'react-router-dom'
-import { FaAngleLeft } from "react-icons/fa6";
+import './Avatar.css';
+
 const Avatar = ({ name, imageUrl, width, height }) => {
   let avatarName = "";
 
@@ -28,41 +28,36 @@ const Avatar = ({ name, imageUrl, width, height }) => {
   const randomNumber = Math.floor(Math.random() * bgColor.length);
 
   return (
-    <div
-      className="flex items-center gap-4" // Change this to `flex` to place items horizontally
-      style={{ width: "auto", height: height + "px" }}
-    >
-      {/* Profile Image */}
-      <Link to="/" className="lg:hidden">
-              <FaAngleLeft size={25} />
-            </Link>
-      <div
-        className={`relative flex justify-center items-center overflow-hidden rounded-full`}
-        style={{ width: width + "px", height: height + "px" }}
-      >
+    <div className="chat-avatar-container">
+      <div className="avatar-image-wrapper">
         {imageUrl ? (
           <img
             src={imageUrl}
-            width={width}
-            height={height}
             alt={name}
-            className="rounded-full object-cover"
+            className="avatar-image"
+            style={{ 
+              '--avatar-width': `${width}px`,
+              '--avatar-height': `${height}px`
+            }}
           />
         ) : name ? (
           <div
-            className={`flex justify-center items-center text-lg ${bgColor[randomNumber]}`}
-            style={{ width: width + "px", height: height + "px" }}
+            className={`avatar-placeholder ${bgColor[randomNumber]}`}
+            style={{ 
+              '--avatar-width': `${width}px`,
+              '--avatar-height': `${height}px`
+            }}
           >
             {avatarName}
           </div>
         ) : (
-          <PiUserCircle size={width} />
+          <div className="avatar-icon-wrapper">
+            <PiUserCircle size={width} />
+          </div>
         )}
       </div>
-
-      {/* Name Display */}
       {name && (
-        <div className="font-semibold text-white text-sm ml-3"> {/* ml-3 adds space between the image and the name */}
+        <div className="avatar-name">
           {name}
         </div>
       )}

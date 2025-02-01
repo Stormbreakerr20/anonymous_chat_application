@@ -137,31 +137,37 @@ const Profile = () => {
         <div onClick={handleNavigate} className="flex items-center gap-5 cursor-pointer">
           <IoArrowBack className="text-white/90 text-4xl lg:text-6xl cursor-pointer" />
         </div>
-        <div className="grid grid-cols-2">
-          <div className="h-full w-32 md:w-48 md:h-48 relative flex items-center justify-center"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="h-24 w-24 sm:h-32 sm:w-32 md:w-48 md:h-48 relative flex items-center justify-center mx-auto md:mx-0"
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
           >
-            <Avatar className="h-32 w-32 md:h-48 md:w-48 rounded-full overflow-hidden">
-              {
-                image ? (<AvatarImage src={image || (userInfo.image ? `${import.meta.env.VITE_HOST}/${userInfo.image}` : null)} alt="profile" className="object-cover w-full h-full bg-black" />): (
-                <div className={`uppercase text-5xl flex items-center justify-center w-32 h-32 md:w-48 md:h-48 rounded-full ${getColor(selectedcolor)}`}>
-                {firstName ? firstName.split("").shift(): userInfo.email.split("").shift()}
-                </div>)
-              }
-            </Avatar>
-            {
-              hovered &&
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 ring-fuchsia-50 rounded-full"
-                  onClick={image ? handleDeleteImage : handleFileInputClick}
-                >
-                  {
-                    image ? <FaTrash className="text-white text-3xl cursor-pointer" /> : <FaPlus className="text-white text-3xl cursor-pointer" />
-                  }
+            <Avatar className="h-full w-full rounded-full overflow-hidden flex items-center justify-center bg-[#2c2e3b]">
+              {image ? (
+                <AvatarImage 
+                  src={image || (userInfo.image ? `${import.meta.env.VITE_HOST}/${userInfo.image}` : null)} 
+                  alt="profile" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className={`w-full h-full flex items-center justify-center ${getColor(selectedcolor)}`}>
+                  <span className="text-2xl sm:text-3xl md:text-5xl uppercase">
+                    {firstName ? firstName.charAt(0) : userInfo.email.charAt(0)}
+                  </span>
                 </div>
-              
-            }
-            <input type="file" ref = {fileInputRef} className="hidden" onChange={handleImageChange} name="profile-image" accept=".png, .jpg, .jpeg, .svg, .webp" />
+              )}
+            </Avatar>
+            {hovered && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full"
+                onClick={image ? handleDeleteImage : handleFileInputClick}
+              >
+                {image ? 
+                  <FaTrash className="text-white text-xl sm:text-2xl md:text-3xl" /> : 
+                  <FaPlus className="text-white text-xl sm:text-2xl md:text-3xl" />
+                }
+              </div>
+            )}
+            <input type="file" ref={fileInputRef} className="hidden" onChange={handleImageChange} name="profile-image" accept="image/*" />
           </div>
           <div className="flex min-w-32 md:min-w-64 flex-col gap-5 text-white items-center justify-center">
             <div className="w-full">
@@ -187,6 +193,15 @@ const Profile = () => {
         </div>
         <div className="w-full">
           <button className="h-16 bg-purple-700 hover:bg-purple-900 transition-all duration-300 w-full" onClick={saveChanges}>Save Changes</button>
+        </div>
+        <div className="w-full">
+          <Input 
+            placeholder="Anonymous ID" 
+            type="text" 
+            disabled 
+            value={userInfo.email.split('@')[0]} // Show only the ID part
+            className="rounded-lg p-6 bg-[#2c2e3b] border-none" 
+          />
         </div>
       </div>
     </div>

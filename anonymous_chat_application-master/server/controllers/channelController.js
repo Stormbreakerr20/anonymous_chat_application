@@ -34,7 +34,7 @@ exports.getChannelMessages = async (req, res) => {
         const isConfession = channel.name === 'Confessions';
         if (isConfession) {
             messages = await ConfessionMessage.find({ channelId: new mongoose.Types.ObjectId(channelId) })
-                .populate('userId', 'name');
+                .populate('userId', 'firstName lastName'); // Changed from 'name' to 'firstName lastName'
         } else {
             messages = await Message.find({ channelId: new mongoose.Types.ObjectId(channelId) })
                 .populate('userId', 'firstName lastName');
@@ -64,32 +64,33 @@ exports.createChannel = async (req, res) => {
 // Post a new message in a channel
 exports.postMessage = async (req, res) => {
     const { channelId } = req.params;
-    const { userId,content,imageUrl } = req.body; // Assume userId is passed via the frontend
+    const { userId, content, imageUrl, to, category, anonymous, backgroundColor } = req.body;
 
     try {
-        // const newMessage = await Message.create({ channelId,userId, content,imageUrl });
-        // res.status(201).json({ success: true, message: newMessage });
-         const channel = await Channel.findById(channelId);
+        const channel = await Channel.findById(channelId);
         if (!channel) {
             return res.status(404).json({ success: false, message: "Channel not found" });
         }
+
         if (channel.name === 'Confessions') {
-            // Using the Confession Message schema to save the message
-            // console.log("hello ")
-            const newGeneralMessage = await ConfessionMessage.create({ channelId, userId, content });
-            // Make a POST request to the external URL with the message data
-            await axios.post(`${process.env.URL}/api/dm`, {
-                channelId: newGeneralMessage.channelId,
-                userId: newGeneralMessage.isMention,
-                content: newGeneralMessage.content,
-                createdAt: Date.now
+            const newConfession = await ConfessionMessage.create({ 
+                channelId, 
+                userId, 
+                content,
+                to,
+                category,
+                anonymous,
+                backgroundColor // Make sure this is saved
             });
-            res.status(201).json({ success: true, message: newGeneralMessage });
+            
+            // Populate the user details before sending response
+            await newConfession.populate('userId', 'firstName lastName');
+            
+            res.status(201).json({ success: true, message: newConfession });
+        } else {
+            const newMessage = await Message.create({ channelId, userId, content, imageUrl });
+            res.status(201).json({ success: true, message: newMessage });
         }
-        // For other channels, use the regular Message schema
-        const newMessage = await Message.create({ channelId, userId, content,imageUrl });
-        // console.log(newMessage.userId._id);
-        res.status(201).json({ success: true, message: newMessage });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

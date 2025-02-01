@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { signup, login, getUserInfo, updateProfile, addProfileImage, removeProfileImage, logout } = require("../controllers/AuthController.js");
+const { signup, login, getUserInfo, updateProfile, addProfileImage, removeProfileImage, logout, generateName } = require("../controllers/AuthController.js");
 const { verifyToken } = require("../middlewares/AuthMiddleware.js");
 const multer = require("multer");
 const { existsSync, mkdirSync } = require('fs');
@@ -39,6 +39,7 @@ const upload = multer({
 
 authRoutes.post('/signup', signup);
 authRoutes.post('/login', login);
+authRoutes.get('/generate-name', generateName);  // Add this new route
 authRoutes.get('/user-info',verifyToken,getUserInfo);
 authRoutes.post('/update-profile',verifyToken,updateProfile);
 authRoutes.post('/add-profile-image',verifyToken,upload.single('profile-image'),addProfileImage);

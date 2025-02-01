@@ -1,0 +1,181 @@
+.chatroom-container {
+  @apply flex flex-col h-screen w-full bg-[#1c1d25];
+}
+
+.chatroom-header {
+  @apply bg-[#2a2b36] p-4 flex items-center space-x-4;
+}
+
+.back-button {
+  @apply text-white hover:text-purple-500;
+}
+
+.messages-container {
+  @apply flex-1 overflow-y-auto bg-[#262831] p-4 space-y-4;
+}
+
+.date-separator {
+  @apply flex items-center justify-center my-4;
+}
+
+.date-label {
+  @apply bg-[#2a2b36] px-4 py-1 rounded-full text-xs text-gray-400;
+}
+
+.message-wrapper {
+  @apply flex mb-4;
+}
+
+.message-wrapper.sent {
+  @apply justify-end;
+}
+
+.message-wrapper.received {
+  @apply justify-start;
+}
+
+.message-bubble {
+  @apply relative max-w-[70%] w-fit rounded-2xl p-4 shadow-lg transform transition-all duration-200 hover:scale-[1.02];
+}
+
+.message-bubble.sent {
+  @apply bg-purple-500;
+}
+
+.message-bubble.received {
+  @apply bg-[#2a2b36];
+}
+
+.message-author {
+  @apply font-bold text-sm text-white/90 cursor-pointer hover:underline mb-1;
+}
+
+.message-content {
+  @apply text-white/95 text-base break-words mb-2 w-full;
+}
+
+.message-image {
+  @apply mt-2 cursor-pointer;
+}
+
+.message-image img {
+  @apply rounded-lg w-64 h-64 object-cover hover:opacity-90 transition-opacity;
+}
+
+.message-timestamp {
+  @apply text-xs text-white/70 text-right mt-1;
+}
+
+.delete-button {
+  @apply absolute -top-2 -right-2 text-red-500 hover:text-red-700 bg-[#262831] rounded-full p-1;
+}
+
+.input-section {
+  @apply h-20 bg-[#262831] flex items-center px-4;
+}
+
+.upload-button {
+  @apply inline-flex items-center justify-center w-10 h-10 bg-purple-500 rounded-full hover:bg-purple-600 cursor-pointer transition-colors;
+}
+
+.message-input {
+  @apply w-full p-3 rounded-lg bg-[#2a2b36] text-white outline-none;
+}
+
+.send-button {
+  @apply ml-2 text-purple-500 hover:text-purple-600;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50;
+}
+
+.modal-content {
+  @apply bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full;
+}
+
+.preview-container {
+  @apply fixed bottom-24 left-[21%] flex justify-start items-center w-full;
+}
+
+/* Responsive Design */
+@media (max-width: 1280px) {
+  .message-bubble {
+    @apply max-w-[65%];
+  }
+}
+
+@media (max-width: 1024px) {
+  .message-bubble {
+    @apply max-w-[75%];
+  }
+}
+
+@media (max-width: 768px) {
+  .message-bubble {
+    @apply max-w-[85%];
+  }
+
+  .message-content {
+    @apply text-sm;
+  }
+
+  .input-section {
+    @apply h-16 px-2;
+  }
+
+  .message-image img {
+    @apply w-48 h-48;
+  }
+
+  .input-section {
+    @apply px-2;
+  }
+
+  .preview-container {
+    @apply left-[10%];
+  }
+}
+
+@media (max-width: 480px) {
+  .message-bubble {
+    @apply max-w-[90%] p-2;
+  }
+
+  .message-content {
+    @apply text-xs;
+  }
+
+  .message-image img {
+    @apply w-32 h-32;
+  }
+
+  .input-section {
+    @apply h-14;
+  }
+
+  .message-input {
+    @apply text-sm p-2;
+  }
+
+  .message-bubble {
+    @apply max-w-[90%];
+  }
+
+  .message-image img {
+    @apply w-40 h-40;
+  }
+
+  .message-content {
+    @apply text-sm;
+  }
+
+  .chatroom-header {
+    @apply p-2 space-x-2;
+  }
+
+  .preview-container {
+    @apply left-[5%];
+  }
+}

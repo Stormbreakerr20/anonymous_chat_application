@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { apiClient } from "@/lib/api-client";
 import { SEARCH_CONTACTS_ROUTES } from "@/utils/constants";
+import './index.css';
 
 const NewDM = ({ onSelecting }) => {
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
@@ -43,53 +44,48 @@ const NewDM = ({ onSelecting }) => {
     <>
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger>
-            <FaPlus
-              className="text-neutral-400 font-light text-opacity-90 text-start hover:text-neutral-100 cursor-pointer transition-all duration-300"
-              onClick={() => setOpenNewContactModal(true)}
-            />
+          <TooltipTrigger className="flex items-center justify-center">
+            <FaPlus size={20} className="new-dm-button" onClick={() => setOpenNewContactModal(true)} />
           </TooltipTrigger>
-          <TooltipContent className="bg-[#1c1b1e] border-none mb-2 p-3 text-white">
+          <TooltipContent className="tooltip-content">
             Select New Contact
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <Dialog open={openNewContactModal} onOpenChange={setOpenNewContactModal}>
-        <DialogContent className="bg-[#181920] border-none text-white w-[400px] h-[400px] flex flex-col">
+        <DialogContent className="dialog-wrapper">
           <DialogHeader>
-            <DialogTitle>Please Select a Contact</DialogTitle>
+            <DialogTitle className="dialog-header">Please Select a Contact</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-5">
-            <Input
-              placeholder="Search Contacts"
-              className="rounded-lg p-6 bg-[#2c2e3b] border-none"
-              onChange={(e) => searchContacts(e.target.value)}
-            />
-          </div>
-          <ScrollArea className="h-[250px]">
-            <div className="flex flex-col gap-5">
+          <Input
+            placeholder="Search Contacts"
+            className="search-input"
+            onChange={(e) => searchContacts(e.target.value)}
+          />
+          <ScrollArea className="contacts-list">
+            <div className="flex flex-col gap-2">
               {searchedContacts.map((contact) => (
                 <div
                   key={contact._id}
-                  className="flex gap-3 items-center cursor-pointer"
-                  onClick={() => handleSelectContact(contact._id )}
+                  className="contact-item"
+                  onClick={() => handleSelectContact(contact._id)}
                 >
-                  <Avatar className="h-12 w-12 rounded-full overflow-hidden">
+                  <Avatar className="contact-avatar">
                     {contact.image ? (
                       <AvatarImage
                         src={`${import.meta.env.VITE_HOST}/${contact.image}`}
                         alt="profile"
-                        className="object-cover w-full h-full"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className={`uppercase text-xl flex items-center justify-center w-full h-full`}>
+                      <div className="w-full h-full flex items-center justify-center uppercase">
                         {contact.firstName?.charAt(0) || contact.email?.charAt(0)}
                       </div>
                     )}
                   </Avatar>
-                  <div>
-                    <p className="font-bold">{contact.name}</p>
-                    <p className="text-sm text-gray-400">{contact.email}</p>
+                  <div className="contact-info">
+                    <p className="contact-name">{contact.name}</p>
+                    <p className="contact-email">{contact.email}</p>
                   </div>
                 </div>
               ))}

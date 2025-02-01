@@ -2,27 +2,36 @@ import React, { useEffect, useState } from "react";
 import { PiUserCircle } from "react-icons/pi";
 import { useAppStore } from "@/store";
 import socket from "../../../../../../socket";
-import { Link, useParams } from 'react-router-dom'
-import { FaAngleLeft } from "react-icons/fa6";
+import './Avatar.css';
 
 const Avatar = ({ userId, name, imageUrl, width, height, handleOnline }) => {
   const onlineUsers = useAppStore((state) => state.onlineUser);
   const [isOnline, setIsOnline] = useState(false);
-  let avatarName = "";
+  
+  // Get initials from name
+  const getInitials = (name) => {
+    if (!name) return "?";
+    
+    const words = name.trim().split(/\s+/);
+    if (words.length === 0) return "?";
+    
+    if (words.length === 1) {
+      return words[0].charAt(0).toUpperCase();
+    }
+    
+    return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+  };
+
+  const avatarName = getInitials(name);
 
   // Set online status and pass the update to the parent
   useEffect(() => {
-    setIsOnline(onlineUsers.includes(userId));
-    handleOnline(isOnline); // Pass the status back to parent component
-  }, [onlineUsers, userId, isOnline]);
-
-  if (name) {
-    const splitName = name?.split(" ");
-    avatarName =
-      splitName.length > 1
-        ? splitName[0][0] + splitName[1][0]
-        : splitName[0][0];
-  }
+    const online = onlineUsers.includes(userId);
+    setIsOnline(online);
+    if (handleOnline) {
+      handleOnline(online);
+    }
+  }, [onlineUsers, userId, handleOnline]);
 
   const bgColor = [
     "bg-slate-200",
@@ -36,47 +45,34 @@ const Avatar = ({ userId, name, imageUrl, width, height, handleOnline }) => {
     "bg-blue-200",
   ];
 
-  const randomNumber = Math.floor(Math.random() * 9);
+  const randomNumber = Math.floor(Math.random() * bgColor.length);
 
   return (
-    <div
-      className={`flex items-center gap-4 text-slate-800 rounded-full font-bold relative`}
-      style={{ width: width + "px", height: height + "px" }}
-    >
-      {/* Avatar */}
-      {/* <Link to="/" className="lg:hidden">
-        <FaAngleLeft size={25} />
-      </Link> */}
-      <div className="relative">
+    <div className="avatar-container" style={{
+      '--avatar-width': `${width}px`,
+      '--avatar-height': `${height}px`
+    }}>
+      <div className="avatar-wrapper">
         {imageUrl ? (
           <img
             src={imageUrl}
-            width={width}
-            height={height}
-            alt={name}
-            className="overflow-hidden rounded-full"
+            alt={name || 'User avatar'}
+            className="avatar-image"
           />
         ) : (
-          <div
-            style={{ width: width + "px", height: height + "px" }}
-            className={`overflow-hidden rounded-full flex justify-center items-center text-lg ${bgColor[randomNumber]}`}
-          >
+          <div className={`avatar-placeholder ${bgColor[randomNumber]}`}>
             {avatarName}
           </div>
         )}
-        {isOnline && (
-          <div className="bg-green-600 p-1 absolute bottom-2 -right-1 z-10 rounded-full"></div>
-        )}
+        {isOnline && <div className="online-indicator" />}
       </div>
-
-      {/* Name and Status */}
-      <div>
-        <h3 className="font-semibold text-lg text-white">{name}</h3>
-        <p className="text-sm text-gray-400">
+      <div className="user-info">
+        <h3 className="user-name">{name || 'Anonymous User'}</h3>
+        <p className="user-status">
           {isOnline ? (
-            <span className="text-green-500">Online</span>
+            <span className="status-online">Online</span>
           ) : (
-            <span className="text-red-500">Offline</span>
+            <span className="status-offline">Offline</span>
           )}
         </p>
       </div>

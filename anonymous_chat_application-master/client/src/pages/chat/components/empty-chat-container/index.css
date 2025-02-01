@@ -1,0 +1,40 @@
+.empty-container {
+  @apply flex-1 flex flex-col justify-center items-center bg-[#1c1d25];
+}
+
+.welcome-animation {
+  @apply mb-4;
+}
+
+.welcome-text {
+  @apply text-white text-3xl mt-4 text-center;
+}
+
+.welcome-highlight {
+  @apply text-purple-500;
+}
+
+.content-container {
+  @apply w-full h-full;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .welcome-text {
+    @apply text-2xl px-4;
+  }
+
+  .welcome-animation {
+    @apply scale-90;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-text {
+    @apply text-xl px-2;
+  }
+
+  .welcome-animation {
+    @apply scale-75;
+  }
+}

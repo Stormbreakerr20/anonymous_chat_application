@@ -1,0 +1,48 @@
+.chat-avatar-container {
+  @apply flex items-center gap-4;
+}
+
+.avatar-image-wrapper {
+  @apply relative flex-shrink-0;
+}
+
+.avatar-image {
+  @apply rounded-full object-cover overflow-hidden;
+  width: var(--avatar-width);
+  height: var(--avatar-height);
+  min-width: var(--avatar-width);
+  min-height: var(--avatar-height);
+}
+
+.avatar-placeholder {
+  @apply overflow-hidden rounded-full flex justify-center items-center text-lg;
+  width: var(--avatar-width);
+  height: var(--avatar-height);
+  min-width: var(--avatar-width);
+  min-height: var(--avatar-height);
+}
+
+.avatar-icon-wrapper {
+  @apply rounded-full overflow-hidden;
+}
+
+.avatar-name {
+  @apply font-semibold text-white text-sm;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chat-avatar-container {
+    @apply gap-3;
+  }
+
+  .avatar-name {
+    @apply text-xs;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-avatar-container {
+    @apply gap-2;
+  }
+}

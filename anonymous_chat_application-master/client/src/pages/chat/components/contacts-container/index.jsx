@@ -1,10 +1,12 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
+import './index.css';
 import NewDM from "./components/new-dm";
 import ProfileInfo from "./components/profile-info";
 import socket from "../../../../socket";
+
 const Logo = () => {
   return (
-    <div className="flex p-5 justify-start items-center gap-2">
+    <div className="logo-container">
       <svg
         id="logo-38"
         width="78"
@@ -29,7 +31,7 @@ const Logo = () => {
           fill="#a16ee8"
         ></path>
       </svg>
-      <span className="text-3xl font-semibold ">Shadow</span>
+      <span className="logo-text">Shadow</span>
     </div>
   );
 };
@@ -61,91 +63,86 @@ const ContactsContainer = ({ dms, channels, onSelect }) => {
     };
   }, []);
   return (
-    <div className="relative md:w-[40vw] lg:w-[35vw] xl:w-[25vw] h-full bg-[#1b1c24] border-r-2 border-[#2f303b] w-full">
-      <div className="pt-3">
-        <Logo />
+    <div className="contacts-container">
+      <div className="contacts-header">
+        <div className="mobile-header">
+          <Logo />
+        </div>
       </div>
 
-      {/* Direct Messages Section */}
-      <div className="my-5">
-        <div className="flex items-center justify-between px-4">
-          <div
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={() => setShowDMs((prev) => !prev)} // Toggle DM dropdown
-          >
-            <Title text="Direct Messages" />
-            <span className="text-neutral-400">{showDMs ? "▼" : "►"}</span>
-          </div>
-          <NewDM onSelecting={handleSelectingContact} />
-        </div>
-        {showDMs && (
-          <div className="mt-3 bg-[#2a2b36] p-3 rounded-lg max-h-[300px] overflow-y-auto">
-            {/* Search Bar for DMs */}
-            <input
-              type="text"
-              placeholder="Search DMs"
-              className="w-full p-2 bg-[#33363b] rounded text-white mb-3"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {/* DM List */}
-            <div className="space-y-2">
-              {filteredDMs.map((dm) => (
-                <div
-                  key={dm._id}
-                  className="p-2 bg-[#3a3b47] hover:bg-[#4a4b57] rounded cursor-pointer"
-                  onClick={() => onSelect("dm", dm.id)}
-                >
-                  <div className="font-bold text-white">{dm.name}</div>
-                  <div className="text-sm text-gray-400">DM</div>
-                </div>
-              ))}
+      <div className="contacts-scroll-area">
+        {/* Direct Messages Section */}
+        <div className="section-container">
+          <div className="section-header">
+            <div className="section-title-container" onClick={() => setShowDMs((prev) => !prev)}>
+              <Title text="Direct Messages" />
+              <span className="text-neutral-400">{showDMs ? "▼" : "►"}</span>
+            </div>
+            <div className="add-contact-button">
+              <NewDM onSelecting={handleSelectingContact} />
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Channels Section */}
-      <div className="my-5">
-        <div
-          className="flex items-center justify-between px-4 cursor-pointer"
-          onClick={() => setShowChannels((prev) => !prev)} // Toggle Channels dropdown
-        >
-          <div className="flex items-center gap-2">
-            <Title text="Channels" />
-            <span className="text-neutral-400">{showChannels ? "▼" : "►"}</span>
-          </div>
+          {showDMs && (
+            <div className="dropdown-content">
+              <input
+                type="text"
+                placeholder="Search DMs"
+                className="search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <div className="item-list">
+                {filteredDMs.map((dm) => (
+                  <div
+                    key={dm._id}
+                    className="list-item"
+                    onClick={() => onSelect("dm", dm.id)}
+                  >
+                    <div className="item-title">{dm.name}</div>
+                    <div className="item-subtitle">DM</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        {showChannels && (
-          <div className="mt-3 bg-[#2a2b36] p-3 rounded-lg max-h-[300px] overflow-y-auto">
-            {/* Channel List */}
-            <div className="space-y-2">
-              {channels.map((channel) => (
-                <div
-                  key={channel._id}
-                  className="p-2 bg-[#3a3b47] hover:bg-[#4a4b57] rounded cursor-pointer"
-                  onClick={() => onSelect("channel", channel._id, channel.name)}
-                >
-                  <div className="font-bold text-white">{channel.name}</div>
-                  <div className="text-sm text-gray-400">{channel.description}</div>
-                </div>
-              ))}
+
+        {/* Channels Section */}
+        <div className="section-container">
+          <div className="section-header">
+            <div className="section-title-container" onClick={() => setShowChannels((prev) => !prev)}>
+              <Title text="Channels" />
+              <span className="text-neutral-400">{showChannels ? "▼" : "►"}</span>
             </div>
           </div>
-        )}
+          {showChannels && (
+            <div className="dropdown-content">
+              <div className="item-list">
+                {channels.map((channel) => (
+                  <div
+                    key={channel._id}
+                    className="list-item"
+                    onClick={() => onSelect("channel", channel._id, channel.name)}
+                  >
+                    <div className="item-title">{channel.name}</div>
+                    <div className="item-subtitle">{channel.description}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <ProfileInfo />
+      <div className="contacts-footer">
+        <ProfileInfo />
+      </div>
     </div>
   );
 };
 
-export default ContactsContainer;
-
 const Title = ({ text }) => {
-  return (
-    <h6 className="uppercase tracking-widest text-neutral-400 font-light text-opacity-90 text-sm">
-      {text}
-    </h6>
-  );
+  return <h6 className="section-title">{text}</h6>;
 };
+
+export default ContactsContainer;

@@ -1,0 +1,103 @@
+.profile-container {
+  @apply fixed bottom-0 flex items-center justify-between px-6 bg-[#2a2b33];
+  height: 4rem;
+  width: 320px; /* Match the contacts-container default width */
+  z-index: 10;
+}
+
+.profile-info {
+  @apply flex items-center gap-3 justify-center;
+}
+
+.profile-avatar {
+  @apply h-10 w-10 min-h-10 min-w-10 rounded-full overflow-hidden flex items-center justify-center bg-[#3a3b43];
+}
+
+.avatar-image {
+  @apply h-full w-full object-cover;
+}
+
+.avatar-placeholder {
+  @apply h-full w-full flex items-center justify-center text-white text-lg font-medium;
+}
+
+.profile-name {
+  @apply text-white text-sm font-medium truncate;
+  max-width: 150px;
+}
+
+.profile-actions {
+  @apply flex gap-4;
+}
+
+.edit-icon {
+  @apply text-purple-500 text-xl cursor-pointer 
+         hover:text-purple-400 transition-colors;
+}
+
+.logout-icon {
+  @apply text-red-500 text-xl cursor-pointer
+         hover:text-red-400 transition-colors;
+}
+
+.tooltip-content {
+  @apply bg-[#1c1b1e] border-none text-white rounded-lg;
+}
+
+/* Responsive Design */
+@media (max-width: 1280px) {
+  .profile-container {
+    width: 280px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .profile-container {
+    width: 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    @apply px-4;
+    width: 100%;
+  }
+
+  .profile-name {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    @apply px-3;
+    height: 3.5rem;
+    width: 100%;
+  }
+
+  .profile-avatar {
+    height: 32px;
+    width: 32px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .profile-name {
+    max-width: 100px;
+    @apply text-xs;
+  }
+
+  .profile-actions {
+    @apply gap-3;
+  }
+
+  .edit-icon,
+  .logout-icon {
+    @apply text-lg;
+  }
+
+  .avatar-placeholder {
+    line-height: 32px;
+    font-size: 1rem;
+  }
+}

@@ -1,0 +1,281 @@
+/* Base styles */
+.contacts-container {
+  @apply relative bg-[#1b1c24] border-r-2 border-[#2f303b]
+         flex flex-col overflow-hidden
+         w-[320px] min-w-[320px] max-w-[320px] h-screen;
+}
+
+.logo-container {
+  @apply flex items-center gap-2 px-4 py-2;
+  min-width: fit-content;
+  white-space: nowrap;
+}
+
+.logo-text {
+  @apply text-xl font-semibold text-white;
+  white-space: nowrap;
+}
+
+.contacts-header {
+  @apply w-full;
+  padding-top: 1rem;
+}
+
+/* Content sections */
+.section-container {
+  @apply my-4 px-4 w-full;
+}
+
+.section-header {
+  @apply flex items-center justify-between w-full mb-2;
+}
+
+.section-title {
+  @apply uppercase tracking-wider text-neutral-400 
+         font-medium text-sm;
+}
+
+.section-title-container {
+  @apply flex items-center gap-2 cursor-pointer;
+}
+
+/* Scrollable area */
+.contacts-scroll-area {
+  @apply flex-1 overflow-y-auto overflow-x-hidden;
+  height: calc(100vh - 160px);
+}
+
+/* Dropdown styles */
+.dropdown-content {
+  @apply mt-2 bg-[#1e1f29] rounded-lg p-3
+         max-h-[300px] overflow-y-auto
+         w-[calc(100%-1rem)] mx-auto;
+}
+
+/* Search input */
+.search-input {
+  @apply w-full p-3 bg-[#33363b] rounded-lg 
+         text-white text-sm mb-3
+         border-none outline-none;
+}
+
+/* List items */
+.item-list {
+  @apply space-y-1.5 w-full pr-1;
+}
+
+.list-item {
+  @apply p-3 bg-[#3a3b47] hover:bg-[#4a4b57] 
+         rounded-lg cursor-pointer 
+         transition-all duration-200;
+}
+
+.item-title {
+  @apply font-medium text-white text-sm;
+}
+
+.item-subtitle {
+  @apply text-xs text-gray-400;
+}
+
+/* Dialog/Modal styles */
+.dialog-content {
+  @apply bg-[#181920] text-white
+         w-full max-w-[400px] h-[400px]
+         rounded-lg p-4 flex flex-col gap-4;
+}
+
+.dialog-search {
+  @apply rounded-lg p-3 bg-[#2c2e3b] 
+         border-none text-white text-sm
+         w-full mb-3;
+}
+
+/* Contact item in search */
+.contact-item {
+  @apply flex gap-3 items-center p-2
+         hover:bg-[#2c2e3b] rounded-lg
+         cursor-pointer transition-all duration-200;
+}
+
+.add-contact-button {
+  @apply text-blue-300 hover:text-blue-200
+         p-1.5 rounded-full
+         transition-all duration-200
+         cursor-pointer
+         flex items-center justify-center
+         hover:bg-[#2a2b36];
+}
+
+.mobile-header {
+  @apply w-full flex items-center;
+  min-width: fit-content;
+  overflow: visible;
+  padding: 0.5rem 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1280px) {
+  .contacts-container {
+    @apply w-[280px] min-w-[280px];
+  }
+  
+  .logo-text {
+    @apply text-xl;
+  }
+}
+
+@media (max-width: 1024px) {
+  .contacts-container {
+    @apply w-[260px] min-w-[260px];
+  }
+}
+
+@media (max-width: 768px) {
+  .contacts-container {
+    @apply w-full min-w-full fixed inset-0 z-50;
+  }
+
+  .logo-container {
+    @apply px-2;
+    min-width: auto;
+  }
+
+  .logo-container {
+    @apply p-3;
+  }
+
+  .section-container {
+    @apply my-2 px-3;
+  }
+
+  .dialog-content {
+    @apply max-w-[90vw] h-[80vh];
+  }
+
+  .contacts-container {
+    @apply w-[100%] min-w-[100%] max-w-[100%] fixed;
+    height: 100vh;
+  }
+
+  .mobile-header {
+    @apply justify-start;
+    width: 320px; /* match your sidebar width */
+  }
+
+  .mobile-header {
+    @apply w-full py-2;
+  }
+
+  .logo-container {
+    @apply p-3 justify-center;
+  }
+
+  .contacts-scroll-area {
+    height: calc(100vh - 140px);
+    @apply px-0;
+  }
+
+  .section-container {
+    @apply my-2;
+  }
+
+  .section-header {
+    @apply px-2 w-full flex items-center justify-between;
+  }
+
+  .dropdown-content {
+    @apply w-[calc(100%-1rem)];
+  }
+
+  .search-input {
+    @apply p-2 text-sm;
+  }
+
+  .list-item {
+    @apply p-2.5 w-full flex flex-col;
+  }
+
+  .item-list {
+    @apply w-full flex flex-col gap-2;
+  }
+
+  .contacts-header {
+    padding-top: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-text {
+    @apply text-lg;
+  }
+
+  .section-container {
+    @apply my-1 px-2;
+  }
+
+  .item-list {
+    @apply space-y-1;
+  }
+
+  .list-item {
+    @apply p-2;
+  }
+
+  .dialog-content {
+    @apply h-[90vh];
+  }
+
+  .logo-text {
+    @apply text-base;
+  }
+
+  .logo-container {
+    @apply p-2;
+  }
+
+  .section-header {
+    @apply px-2 mb-1;
+  }
+
+  .section-title {
+    @apply text-xs;
+  }
+
+  .dropdown-content {
+    @apply p-2 w-[calc(100%-0.5rem)];
+  }
+
+  .search-input {
+    @apply p-2 text-xs mb-2;
+  }
+
+  .list-item {
+    @apply p-2;
+  }
+
+  .item-title {
+    @apply text-xs;
+  }
+
+  .item-subtitle {
+    @apply text-[10px];
+  }
+
+  .contacts-scroll-area {
+    height: calc(100vh - 120px);
+    @apply px-0;
+  }
+
+  .add-contact-button {
+    @apply p-1;
+  }
+
+  .mobile-header {
+    width: 280px; /* match your mobile sidebar width */
+  }
+
+  .contacts-header {
+    padding-top: 0.25rem;
+  }
+}

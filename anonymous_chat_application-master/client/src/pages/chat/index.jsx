@@ -6,6 +6,8 @@ import ContactsContainer from "./components/contacts-container";
 import EmptyChatContainer from "./components/empty-chat-container";
 import io from "socket.io-client";
 import socket from "../../socket";
+import './index.css';
+
 const Chat = () => {
   const { userInfo } = useAppStore();
   const navigate = useNavigate();
@@ -92,18 +94,20 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex h-[100vh] text-white overflow-hidden">
-      {/* Pass channels, DMs, and onSelect function to ContactsContainer */}
-      <ContactsContainer 
-        channels={channels} 
-        dms={dms} 
-        onSelect={handleSelect} 
-      />
+    <div className="chat-container">
+      <div className={`chat-sidebar ${selectedInfo.type ? 'chat-sidebar--hidden lg:block' : ''}`}>
+        <ContactsContainer 
+          channels={channels} 
+          dms={dms} 
+          onSelect={handleSelect} 
+        />
+      </div>
 
-      {/* Pass selectedInfo and messages to EmptyChatContainer */}
-      <EmptyChatContainer 
-        selectedInfo={selectedInfo} 
-      />
+      <div className={`chat-main ${selectedInfo.type ? 'chat-main--active' : ''}`}>
+        <EmptyChatContainer 
+          selectedInfo={selectedInfo} 
+        />
+      </div>
     </div>
   );
 };

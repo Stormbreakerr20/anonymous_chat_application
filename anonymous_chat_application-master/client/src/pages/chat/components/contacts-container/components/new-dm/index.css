@@ -1,0 +1,112 @@
+/* Add button styles */
+.new-dm-button {
+  @apply text-white hover:text-purple-400 
+         transition-all duration-300 
+         rounded-lg hover:bg-[#2a2b36]
+         w-6 h-6 min-w-[24px] min-h-[24px]
+         flex items-center justify-center
+         text-xl p-0;
+}
+
+/* Tooltip styles */
+.tooltip-content {
+  @apply bg-[#1c1b1e] text-white p-2 rounded-lg
+         shadow-lg border border-gray-700/20;
+}
+
+/* Dialog/Modal styles */
+.dialog-wrapper {
+  @apply bg-[#1c1d25] p-6 rounded-lg
+         w-full max-w-[500px] 
+         border border-gray-700/30
+         shadow-xl;
+}
+
+.dialog-header {
+  @apply mb-4 text-xl font-semibold text-white;
+}
+
+.search-input {
+  @apply w-full p-3 rounded-lg
+         bg-[#2a2b36] text-white
+         border-none outline-none
+         placeholder:text-gray-400;
+}
+
+/* Contact list styles */
+.contacts-list {
+  @apply flex flex-col gap-2 mt-4
+         max-h-[60vh] overflow-y-auto;
+}
+
+.contact-item {
+  @apply flex items-center gap-3 p-3
+         hover:bg-[#2a2b36] rounded-lg
+         cursor-pointer transition-all duration-200;
+}
+
+.contact-avatar {
+  @apply w-10 h-10 rounded-full
+         bg-gray-700 flex items-center justify-center
+         text-white font-medium overflow-hidden;
+}
+
+.contact-info {
+  @apply flex flex-col;
+}
+
+.contact-name {
+  @apply text-white text-sm font-medium;
+}
+
+.contact-email {
+  @apply text-gray-400 text-xs;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .dialog-wrapper {
+    @apply max-w-[90vw] p-4;
+  }
+
+  .contacts-list {
+    @apply max-h-[50vh];
+  }
+
+  .contact-item {
+    @apply p-2;
+  }
+}
+
+@media (max-width: 480px) {
+  .dialog-wrapper {
+    @apply max-w-[95vw] p-3;
+  }
+
+  .dialog-header {
+    @apply text-lg mb-3;
+  }
+
+  .search-input {
+    @apply p-2 text-sm;
+  }
+
+  .contact-avatar {
+    @apply w-8 h-8;
+  }
+
+  .contact-name {
+    @apply text-xs;
+  }
+}
+
+/* Dark mode optimization */
+@media (prefers-color-scheme: dark) {
+  .dialog-wrapper {
+    @apply bg-[#1c1d25]/95 backdrop-blur-sm;
+  }
+
+  .search-input {
+    @apply bg-[#2a2b36]/90;
+  }
+}
