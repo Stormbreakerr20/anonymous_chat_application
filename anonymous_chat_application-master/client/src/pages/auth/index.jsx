@@ -136,14 +136,14 @@ const generateRandomId = async () => {
               </TabsContent>
               <TabsContent className='flex flex-col gap-5' value='signup'>
                 <div className="input-group1">
-                  <div className="input-container-with-icon">
+                  <div className="input-container-with-icon flex items-center">
                     <Input 
                       placeholder="Anonymous Id" 
                       className="rounded-full p-6 pr-16 w-full" 
                       value={email} 
                       onChange={(e) => setEmail(e.target.value)} 
                     />
-                    <div className="icon-wrapper">
+                    <div className="icon-wrapper justify-center p-2">
                       <button onClick={generateRandomId} className="icon-button">
                         <FaDice size={18} className="text-purple-500" />
                       </button>
