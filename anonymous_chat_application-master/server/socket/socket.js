@@ -7,6 +7,46 @@ const UserModel = require('../models/UserModel')
 const { DirectMessageModel, ConversationModel } = require("../models/ConversationModel.js");
 const getConversation = require('../helpers/getConversation')
 const cookie = require('cookie');
+const crypto = require('crypto');
+
+// Updated encryption configuration
+const algorithm = 'aes-256-cbc';
+const key = crypto.scryptSync(process.env.MESSAGE_KEY || 'default-key', 'salt', 32);
+const IV_LENGTH = 16;
+
+// Updated encrypt function
+function encrypt(text) {
+    try {
+        if (!text) return '';
+        const iv = crypto.randomBytes(IV_LENGTH);
+        const cipher = crypto.createCipheriv(algorithm, key, iv);
+        let encrypted = cipher.update(text, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        return `${iv.toString('hex')}:${encrypted}`;
+    } catch (error) {
+        console.error('Encryption error:', error);
+        return text;
+    }
+}
+
+// Updated decrypt function
+function decrypt(hash) {
+    try {
+        if (!hash || !hash.includes(':')) return hash;
+        
+        const [ivHex, encryptedText] = hash.split(':');
+        if (!ivHex || !encryptedText) return hash;
+
+        const iv = Buffer.from(ivHex, 'hex');
+        const decipher = crypto.createDecipheriv(algorithm, key, iv);
+        let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+        return decrypted;
+    } catch (error) {
+        console.error('Decryption error:', error);
+        return hash;
+    }
+}
 
 const app = express()
 
@@ -81,8 +121,20 @@ io.on('connection',async(socket)=>{
         // console.log("Sender:", user?._id);
         //  console.log("Receiver:", userId);
 
-        // console.log("hellow",getConversationMessage)
-        socket.emit('message',getConversationMessage?.messages || [])
+        // Decrypt messages before sending
+        const decryptedMessages = getConversationMessage?.messages.map(msg => {
+            try {
+                return {
+                    ...msg.toObject(),
+                    text: msg.text ? decrypt(msg.text) : ''
+                };
+            } catch (error) {
+                console.error('Message decryption error:', error);
+                return msg;
+            }
+        }) || [];
+
+        socket.emit('message', decryptedMessages);
     })
 
 
@@ -105,9 +157,12 @@ io.on('connection',async(socket)=>{
                 });
             }
 
+            // Encrypt message before saving
+            const encryptedText = data.text ? encrypt(data.text) : '';
+
             // Create new message with conversation reference
             const directMessage = await DirectMessageModel.create({
-                text: data.text,
+                text: encryptedText,
                 imageUrl: data.imageUrl,
                 videoUrl: data.videoUrl,
                 msgByUserId: data.msgByUserId,
@@ -122,9 +177,22 @@ io.on('connection',async(socket)=>{
             const updatedConversation = await ConversationModel.findById(conversation._id)
                 .populate('messages');
 
+            // Decrypt messages before emitting
+            const decryptedMessages = updatedConversation.messages.map(msg => {
+                try {
+                    return {
+                        ...msg.toObject(),
+                        text: msg.text ? decrypt(msg.text) : ''
+                    };
+                } catch (error) {
+                    console.error('Message decryption error:', error);
+                    return msg;
+                }
+            });
+
             // Emit to both users
-            io.to(data.sender).emit('directMessage', updatedConversation.messages);
-            io.to(data.receiver).emit('directMessage', updatedConversation.messages);
+            io.to(data.sender).emit('directMessage', decryptedMessages);
+            io.to(data.receiver).emit('directMessage', decryptedMessages);
 
             // Update conversation list for both users
             const conversationSender = await getConversation(data.sender);
@@ -226,14 +294,20 @@ io.on('connection',async(socket)=>{
             const updatedConversation = await ConversationModel.findById(conversation._id)
                 .populate('messages');
 
+            // Decrypt messages before emitting
+            const decryptedMessages = updatedConversation.messages.map(msg => ({
+                ...msg.toObject(),
+                text: msg.text ? decrypt(msg.text) : ''
+            }));
+
             // Emit to both users
             io.to(sender).emit('messageDeleted', { 
                 messageId,
-                messages: updatedConversation.messages 
+                messages: decryptedMessages 
             });
             io.to(receiver).emit('messageDeleted', { 
                 messageId,
-                messages: updatedConversation.messages 
+                messages: decryptedMessages 
             });
 
         } catch (error) {

@@ -80,6 +80,7 @@
     width: 32px;
     min-width: 32px;
     min-height: 32px;
+    border-radius: 50%;
   }
 
   .profile-name {
@@ -98,6 +99,6 @@
 
   .avatar-placeholder {
     line-height: 32px;
-    font-size: 1rem;
+    font-size: 3rem;
   }
 }

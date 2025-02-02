@@ -33,7 +33,7 @@ const ProfileInfo = () => {
     return (
         <div className="profile-container">
             <div className="profile-info">
-                <div className="profile-avatar">
+                <div className={`profile-avatar ${getColor(userInfo.color || 0)}`}>
                     {userInfo.image ? (
                         <img
                             src={getImageUrl()}
@@ -41,7 +41,7 @@ const ProfileInfo = () => {
                             className="avatar-image"
                         />
                     ) : (
-                        <div className={`avatar-placeholder ${getColor(userInfo.color || 0)}`}>
+                        <div className={`avatar-placeholder`}>
                             {userInfo.firstName?.[0]?.toUpperCase() || userInfo.email?.[0]?.toUpperCase()}
                         </div>
                     )}

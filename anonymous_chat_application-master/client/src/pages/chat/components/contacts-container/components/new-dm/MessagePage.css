@@ -25,17 +25,17 @@
 .message-section {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 0.5rem;
   min-height: 0;
   background-color: #1c1d25;
   height: calc(100vh - 144px); /* Subtract header and input section height */
+  width: 100%;
 }
 
 .message-list {
-  @apply flex flex-col gap-4;
-  max-width: 1200px; /* Limit maximum width of messages */
-  margin: 0 auto; /* Center the messages */
+  @apply flex flex-col gap-2;
   width: 100%;
+  padding: 0 0.5rem;
 }
 
 .message-bubble {
@@ -96,9 +96,24 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+  .message-list {
+    max-width: 700px;
+  }
+  
   .message-bubble {
-    max-width: 85%;
+    max-width: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .message-list {
+    max-width: 100%;
+    padding: 0 0.25rem;
+  }
+  
+  .message-bubble {
+    max-width: 75%;
   }
 
   .image-preview {
@@ -106,7 +121,7 @@
   }
 
   .message-section {
-    @apply p-2;
+    padding: 0.25rem;
   }
 
   .input-section {
@@ -115,8 +130,12 @@
 }
 
 @media (max-width: 480px) {
+  .message-list {
+    padding: 0 0.25rem;
+  }
+  
   .message-bubble {
-    max-width: 90%;
+    max-width: 85%;
   }
 
   .image-preview {
