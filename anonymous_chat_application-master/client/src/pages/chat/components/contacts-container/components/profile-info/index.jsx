@@ -15,7 +15,7 @@ const ProfileInfo = () => {
 
     const getImageUrl = () => {
         if (!userInfo.image) return null;
-        return `${import.meta.env.VITE_HOST}/${userInfo.image}`.replace(/\\/g, '/');
+        return userInfo.image;
     };
 
     const logOut = async () => {
@@ -34,6 +34,7 @@ const ProfileInfo = () => {
         <div className="profile-container">
             <div className="profile-info">
                 <div className={`profile-avatar ${getColor(userInfo.color || 0)}`}>
+                    
                     {userInfo.image ? (
                         <img
                             src={getImageUrl()}

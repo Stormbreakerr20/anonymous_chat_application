@@ -9,6 +9,10 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { ADD_PROFILE_IMAGE_ROUTE, HOST, REMOVE_PROFILE_IMAGE_ROUTE, UPDATE_PROFILE_ROUTE } from "@/utils/constants";
+import axios from "axios"
+
+
+
 
 const Profile = () => {
 
@@ -22,6 +26,7 @@ const Profile = () => {
   const [hovered , setHovered] = useState(false);
   const [selectedcolor, setSelectedColor] = useState(0);
   const fileInputRef = useRef(null);
+  const [loading, setLoading] = useState(false);
 
 
   useEffect(()=> {
@@ -75,38 +80,60 @@ const Profile = () => {
   const handleFileInputClick = () => { 
     fileInputRef.current.click();
   };
-
   const handleImageUpload = async (file) => {
     try {
-        const formData = new FormData();
-        formData.append('profile-image', file);
-
-        console.log('Uploading file:', file); // Debug log
-
-        const response = await apiClient.post(
-            ADD_PROFILE_IMAGE_ROUTE,
-            formData,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-                withCredentials: true
-            }
-        );
-
-        if (response.data?.image) {
-            // Create a full URL for the image
-            const imageUrl = `${import.meta.env.VITE_HOST}/${response.data.image}`;
-            setImage(imageUrl);
-            setUserInfo({ ...userInfo, image: response.data.image });
-            toast.success("Image uploaded successfully");
-        }
+      setLoading(true); // Start loading
+      const signatureResponse = await axios.post("http://localhost:3000/api/cloudinary/get-signature", {}, {
+        withCredentials: true,
+      });
+  
+      if (!signatureResponse.data) {
+        toast.error("Failed to get Cloudinary signature");
+        return;
+      }
+  
+      const { timestamp, signature, cloudName, apiKey } = signatureResponse.data;
+  
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("timestamp", timestamp);
+      formData.append("api_key", apiKey);
+      formData.append("signature", signature);
+  
+      const cloudinaryResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: "POST",
+        body: formData,
+      });
+  
+      const cloudinaryData = await cloudinaryResponse.json();
+      if (cloudinaryData.error) {
+        toast.error("Cloudinary upload failed");
+        return;
+      }
+  
+      const imageUrl = cloudinaryData.secure_url;
+  
+      // Update user profile image in backend
+      const userResponse = await axios.post(
+        "http://localhost:3000/api/auth/add-profile-image",
+        { imageUrl },
+        { withCredentials: true }
+      );
+  
+      if (userResponse.status === 200) {
+        toast.success("Profile image updated successfully");
+        setUserInfo({ ...userInfo, image: imageUrl });
+      } else {
+        toast.error("Failed to update profile image");
+      }
     } catch (error) {
-        console.error("Image upload error:", error);
-        toast.error("Failed to upload image. Please try again.");
+      toast.error("An error occurred during the upload");
+      console.error("Upload error:", error);
+    } finally {
+      setLoading(false); // End loading
     }
   };
-
+   
   const handleImageChange = async  (event) => {
     const file = event.target.files[0];
     console.log(file);
@@ -116,20 +143,23 @@ const Profile = () => {
   };
 
   const handleDeleteImage = async () => {
-    try{
-
-      const response = await apiClient.delete(REMOVE_PROFILE_IMAGE_ROUTE,{withCredentials:true});
-      if(response.status === 200){
-        setUserInfo({...userInfo, image: null});
+    try {
+      setLoading(true); // Start loading
+      const response = await apiClient.delete(REMOVE_PROFILE_IMAGE_ROUTE, { withCredentials: true });
+      
+      if (response.status === 200) {
+        setUserInfo({ ...userInfo, image: null });
         toast.success("Image deleted successfully");
         setImage(null);
       }
-
-    }catch(error){
+    } catch (error) {
       console.error("Delete image error:", error);
       toast.error("Failed to delete image. Please try again.");
+    } finally {
+      setLoading(false); // End loading
     }
   };
+  
 
   return (
     <div className="bg-[#1b1c24] h-[100vh] flex justify-center items-center flex-col gap-10">
@@ -142,21 +172,28 @@ const Profile = () => {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
           >
-            <Avatar className="h-full w-full rounded-full overflow-hidden flex items-center justify-center bg-[#2c2e3b]">
-              {image ? (
-                <AvatarImage 
-                  src={image || (userInfo.image ? `${import.meta.env.VITE_HOST}/${userInfo.image}` : null)} 
-                  alt="profile" 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className={`w-full h-full flex items-center justify-center ${getColor(selectedcolor)}`}>
-                  <span className="text-2xl sm:text-3xl md:text-5xl uppercase">
-                    {firstName ? firstName.charAt(0) : userInfo.email.charAt(0)}
-                  </span>
-                </div>
-              )}
-            </Avatar>
+  <Avatar className="h-full w-full rounded-full overflow-hidden flex items-center justify-center bg-[#2c2e3b]">
+  {loading ? (
+    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+      <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  ) : (
+    image || userInfo.image ? (
+      <AvatarImage 
+        src={userInfo.image} 
+        alt="profile" 
+        className="w-full h-full object-cover"
+      />
+    ) : (
+      <div className={`w-full h-full flex items-center justify-center ${getColor(selectedcolor)}`}>
+        <span className="text-2xl sm:text-3xl md:text-5xl uppercase">
+          {firstName ? firstName.charAt(0) : userInfo.email.charAt(0)}
+        </span>
+      </div>
+    )
+  )}
+</Avatar>
+
             {hovered && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full"
                 onClick={image ? handleDeleteImage : handleFileInputClick}

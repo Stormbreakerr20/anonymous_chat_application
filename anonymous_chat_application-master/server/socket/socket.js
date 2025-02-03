@@ -105,7 +105,7 @@ io.on('connection',async(socket)=>{
             _id : userDetails?._id,
             name : userDetails?.firstName,
             email : userDetails?.email,
-            profile_pic : userDetails?.profile_pic,
+            image : userDetails?.image,
             online : onlineUser.has(userId)
         }
         socket.emit('message-user',payload)

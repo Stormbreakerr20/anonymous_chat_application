@@ -77,11 +77,12 @@ const Sidebar = () => {
 
                 <div className='flex flex-col items-center'>
                     <button className='mx-auto' title={user?.name} onClick={()=>setEditUserOpen(true)}>
+                       
                         <Avatar
                             width={40}
                             height={40}
                             name={user?.name}
-                            imageUrl={user?.profile_pic}
+                            imageUrl={user?.image}
                             userId={user?._id}
                         />
                     </button>
@@ -119,7 +120,7 @@ const Sidebar = () => {
                                 <NavLink to={"/"+conv?.userDetails?._id} key={conv?._id} className='flex items-center gap-2 py-3 px-2 border border-transparent hover:border-primary rounded hover:bg-slate-100 cursor-pointer'>
                                     <div>
                                         <Avatar
-                                            imageUrl={conv?.userDetails?.profile_pic}
+                                            imageUrl={conv?.userDetails?.image}
                                             name={conv?.userDetails?.name}
                                             width={40}
                                             height={40}

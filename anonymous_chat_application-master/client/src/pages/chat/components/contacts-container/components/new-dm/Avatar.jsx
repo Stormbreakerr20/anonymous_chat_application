@@ -48,6 +48,7 @@ const Avatar = ({ userId, name, imageUrl, width, height, handleOnline }) => {
   const randomNumber = Math.floor(Math.random() * bgColor.length);
 
   return (
+    
     <div className="avatar-container" style={{
       '--avatar-width': `${width}px`,
       '--avatar-height': `${height}px`

@@ -53,39 +53,41 @@ const NewDM = ({ onSelecting }) => {
         </Tooltip>
       </TooltipProvider>
       <Dialog open={openNewContactModal} onOpenChange={setOpenNewContactModal}>
-        <DialogContent className="dialog-wrapper">
+        <DialogContent className="dialog-wrapper max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
           <DialogHeader>
-            <DialogTitle className="dialog-header">Please Select a Contact</DialogTitle>
+            <DialogTitle className="dialog-header text-xl font-semibold">Please Select a Contact</DialogTitle>
           </DialogHeader>
           <Input
             placeholder="Search Contacts"
-            className="search-input"
+            className="search-input p-3 border rounded-lg mb-4 w-full bg-gray-100 text-gray-800"
             onChange={(e) => searchContacts(e.target.value)}
           />
-          <ScrollArea className="contacts-list">
-            <div className="flex flex-col gap-2">
+          
+          <ScrollArea className="contacts-list max-h-60 overflow-auto">
+            <div className="flex flex-col gap-3">
               {searchedContacts.map((contact) => (
                 <div
                   key={contact._id}
-                  className="contact-item"
+                  className="contact-item p-3 flex items-center gap-3 cursor-pointer hover:bg-gray-200 rounded-lg transition-colors"
                   onClick={() => handleSelectContact(contact._id)}
                 >
-                  <Avatar className="contact-avatar">
+                  <Avatar className="contact-avatar w-12 h-12">
                     {contact.image ? (
                       <AvatarImage
-                        src={`${import.meta.env.VITE_HOST}/${contact.image}`}
-                        alt="profile"
-                        className="w-full h-full object-cover"
+                        src={contact.image}
+                        alt={`${contact.firstName || contact.email}'s profile`}
+                        className="w-full h-full object-cover rounded-full"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center uppercase">
+                      <div className="w-full h-full flex items-center justify-center uppercase bg-gray-500 text-white rounded-full">
                         {contact.firstName?.charAt(0) || contact.email?.charAt(0)}
                       </div>
                     )}
                   </Avatar>
-                  <div className="contact-info">
-                    <p className="contact-name">{contact.name}</p>
-                    <p className="contact-email">{contact.email}</p>
+
+                  <div className="contact-info flex flex-col">
+                    <p className="contact-name text-lg font-semibold text-gray-900">{contact.firstName}</p>
+                    <p className="contact-email text-sm text-gray-600">{contact.email}</p>
                   </div>
                 </div>
               ))}

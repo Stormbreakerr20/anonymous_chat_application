@@ -107,7 +107,7 @@ const EditUserDetails = ({onClose,user}) => {
                         <Avatar
                             width={40}
                             height={40}
-                            imageUrl={data?.profile_pic}
+                            imageUrl={data?.image}
                             name={data?.name}
                         />
                         <label htmlFor='profile_pic'>

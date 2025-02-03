@@ -38,10 +38,11 @@ const MessagePage = (userId) => {
   const [dataUser,setDataUser] = useState({
     name : "",
     email : "",
-    profile_pic : "",
+    image : "",
     online : false,
     _id : ""
   })
+  // const [imageU,setImageU] = useState("")
   const [openImageVideoUpload,setOpenImageVideoUpload] = useState(false)
   const [message,setMessage] = useState({
     text : "",
@@ -60,7 +61,8 @@ const MessagePage = (userId) => {
           currentMessage.current.scrollIntoView({behavior : 'smooth', block : 'end'})
       }
   },[allMessage])
-  console.log(user)
+  // console.log(user)
+
   const handleUploadImageVideoOpen = ()=>{
     setOpenImageVideoUpload(preve => !preve)
   }
@@ -133,10 +135,15 @@ const MessagePage = (userId) => {
     if (socketConnection) {
       socketConnection.emit('message-page', params.userId);
       socketConnection.emit('seen', params.userId);
-
+      
       socketConnection.on('message-user', (data) => {
+        // console.log("data:",data)
+        // console.log("User Data Received:", data); // Debugging log
         setDataUser(data);
+        // setImageU(data.image)
+        // console.log("Profile Pic URL (before render):", dataUser?.image);
       });
+      
 
       socketConnection.on('message', (data) => {
         setAllMessage(data);
@@ -228,15 +235,19 @@ const MessagePage = (userId) => {
         <Link to="/" className="back-button">
           <FaAngleLeft size={25} />
         </Link>
+        
         <div className="header-controls">
+          
           <Avatar
             width={50}
             height={50}
-            imageUrl={dataUser?.profile_pic}
+            imageUrl={dataUser?.image}
+            
             name={dataUser?.name}
             userId={dataUser?._id}
             handleOnline={handleOnline}
           />
+          {/* {dataUser.image} */}
           <button className="cursor-pointer hover:text-purple-500">
             <HiDotsVertical />
           </button>
@@ -263,6 +274,7 @@ const MessagePage = (userId) => {
               </button>
             )}
             {msg.imageUrl && (
+              
  <div className="relative w-64 h-64" onClick={() => setSelectedImage(msg.imageUrl)}>
  <img
    src={msg.imageUrl}
