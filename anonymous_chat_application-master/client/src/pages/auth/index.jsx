@@ -85,6 +85,7 @@ const generateRandomId = async () => {
     const response = await apiClient.get('/api/auth/generate-name');
     if (response.data?.name) {
       setEmail(response.data.name);
+      
     }
   } catch (error) {
     toast.error("Failed to generate anonymous id");

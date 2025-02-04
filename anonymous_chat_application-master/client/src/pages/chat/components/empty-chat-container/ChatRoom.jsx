@@ -179,7 +179,7 @@ const ChatRoom = ({ selectedInfo }) => {
     console.log(`Send DM to ${username} with ID ${userId}`);
     // You can implement actual DM functionality here
     // selectingDM(userId);
-    socket.emit('channelToDm',userInfo.id,userId)
+    socket.emit('channelToDM',userInfo.id,userId)
     // console.log(userInfo.id,userId)
     setDmPrompt({ show: false, username: "", userId: null }); // Close the prompt
     // toast.success(`DM sent to ${username}!`);

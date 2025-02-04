@@ -248,7 +248,7 @@ io.on('connection',async(socket)=>{
         io.emit('receiveMessage', message);
 });
 
-    socket.on('channelToDm',(myId,userId)=>{
+    socket.on('channelToDM',(myId,userId)=>{
         io.to(myId).emit('channelToDM',userId);
     })
     socket.on('deletion',async(msgId, channelId)=>{
